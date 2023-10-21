@@ -1,6 +1,32 @@
+"use client";
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+
 export default function Lobby({ params }: { params: { lobbyId: string } }) {
-  const lobbies = [] as string[]; // TODO: implement
-  if (!lobbies.includes(params.lobbyId)) {
+  const [lobby, setLobby] = useState(null);
+  const [isLoading, setLoading] = useState(true);
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    fetch(
+      "http://localhost:3000" + `/api/lobby/getLobby?id=` + params.lobbyId,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data.lobby);
+        setLobby(data.lobby);
+        setLoading(false);
+      });
+  }, [params.lobbyId]);
+
+  if (isLoading) return <p>Loading...</p>;
+  if (!lobby) {
     return (
       <div className="text-3xl px-6 mx-auto text-center mb-12 my-5">
         <h1 className="font-mono">Lobby not found</h1>
@@ -11,7 +37,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
     );
   }
 
-  //const lobby = getLobby(params.lobbyId) // TODO: implement
+  // TODO: add lobby page UI
 
   return <>work in progress</>;
 }

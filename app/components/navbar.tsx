@@ -24,7 +24,7 @@ export default async function Navbar() {
           <div className="border-4 border-neutral-900 bg-neutral-900 rounded-xl flex items-center">
             <div className="place-content-end">
               <h1 className="mx-6 font-mono">
-                {session ? session.user?.name : "guest"}
+                {session ? session.user?.name : "Guest"}
               </h1>
               <form
                 action={
@@ -44,7 +44,7 @@ export default async function Navbar() {
               </form>
             </div>
             <Image
-              src={session ? session.user?.image! : "/images/guest.png"} // 🫠
+              src={session ? session.user?.image! : "/images/guest.png"}
               width={64}
               height={64}
               alt="logo"

@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth/next";
 
 export default async function Home() {
   const session = await getServerSession(options);
-
   return (
     <div className="px-6 mx-auto text-center mb-12 my-5">
       <h1 className="text-3xl">
@@ -20,7 +19,7 @@ export default async function Home() {
 
       {session ? (
         <button className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-32 rounded mt-5">
-          <a href="/lobby/create">Create a lobby</a>
+          <a href="/lobby/public">Join a public lobby</a>
         </button>
       ) : (
         <button className="bg-neutral-800 text-gray-400 font-bold py-2 px-32 rounded mt-5 cursor-not-allowed">
