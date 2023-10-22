@@ -9,7 +9,7 @@ export default async function Navbar() {
 
   return (
     <>
-      <nav className="bg-neutral-800 p-3 sticky z-10 ">
+      <nav className="bg-neutral-800 p-3 sticky z-10 h-[105px] ">
         <div className="flex items-center mx-auto place-content-between logo-text">
           <a className="flex items-center" href="/">
             <Image

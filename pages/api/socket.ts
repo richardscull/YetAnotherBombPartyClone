@@ -20,9 +20,14 @@ export default function SocketHandler(
     });
     res.socket.server.io = io;
     io.on("connection", (socket) => {
-      socket.on("send-message", (message) => {
+      socket.on("sendMessage", (message) => {
         console.log("got message");
         io.emit("receiveMessage", message);
+      });
+
+      socket.on("buttonPress", (data) => {
+        console.log(data);
+        io.emit("buttonPressed", data);
       });
     });
 

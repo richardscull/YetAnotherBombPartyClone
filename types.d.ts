@@ -18,3 +18,11 @@ type Lobby = {
   host: string;
   createdAt: string;
 };
+
+type Message = {
+  username: string;
+  type: "text" | "admin";
+  avatar: string;
+  message: string;
+  lobbyId: string;
+};
