@@ -8,12 +8,13 @@ export default function StopMobileScreen({
 }) {
   return (
     <div>
-      <div className="lg:hidden flex flex-col items-center justify-center h-screen">
-        <h1 className="text-3xl text-white">
-          Please use a<br></br>desktop device
-        </h1>
+      <div className="md:hidden flex flex-col items-center justify-center h-screen text-center">
+        <h1 className="text-3xl text-white">Please use a desktop device</h1>
+        <h4 className="text-gray-300 mt-4">
+          (or just resize your browser window)
+        </h4>
       </div>
-      <div className="hidden lg:block"> {children} </div>
+      <div className="hidden md:block"> {children} </div>
     </div>
   );
 }

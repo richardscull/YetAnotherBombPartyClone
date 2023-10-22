@@ -21,7 +21,7 @@ type Lobby = {
 
 type Message = {
   username: string;
-  type: "text" | "admin";
+  type: "text" | "admin"; // ! "admin" type is deprecated
   avatar: string;
   message: string;
   lobbyId: string;

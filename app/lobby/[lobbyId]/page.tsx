@@ -6,7 +6,26 @@ import Loading from "../../components/loading";
 import { Message } from "@/types";
 import { useRef } from "react";
 import Image from "next/image";
-let socket: any;
+
+function InitSocket() {
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    fetch(`/api/socket`);
+    const socketIo = io({
+      path: "/api/socket",
+    });
+
+    setSocket(socketIo as any);
+    function cleanup() {
+      socketIo.removeAllListeners();
+      socketIo.disconnect();
+    }
+    return cleanup;
+  }, []);
+
+  return socket as any;
+}
 
 export default function Lobby({ params }: { params: { lobbyId: string } }) {
   const [lobby, setLobby] = useState(null);
@@ -15,9 +34,14 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
   const [allMessages, setAllMessages] = useState([] as Message[]);
   const elementRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
+  const socket = InitSocket();
 
   // Try to get the lobby from the server
   useEffect(() => {
+    // Wait for the session to load
+    if (!params.lobbyId) return;
+    if (session === undefined) return;
+
     fetch(`/api/lobby/getLobby?id=` + params.lobbyId, {
       method: "GET",
       headers: {
@@ -27,53 +51,38 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
       .then((res) => res.json())
       .then((data) => {
         setLobby(data.lobby);
+        if (data.lobby && socket) {
+          socket.on("receiveMessage", async (data: Message) => {
+            const scrollToBottom = (node: HTMLElement) => {
+              node.scroll({ top: node.scrollHeight, behavior: "smooth" });
+            };
 
-        if (data.lobby) {
-          socketInitilizer(session, params.lobbyId);
+            if (data.lobbyId !== params.lobbyId) return;
+
+            console.log(data);
+            setAllMessages((prev) => [...prev, data]);
+
+            if (session == null || data.username !== session?.user?.name) {
+              const audio = new Audio("/sounds/message.mp3");
+              audio.loop = false;
+              audio.play();
+            }
+
+            if (elementRef.current) {
+              // Wait for messages to load
+              await new Promise((resolve) => setTimeout(resolve, 100));
+              scrollToBottom(elementRef.current);
+            }
+          });
+
+          socket.on("buttonPressed", (data: any) => {
+            console.log(data);
+          });
         }
 
         setLoading(false);
       });
-  }, [params.lobbyId, session]);
-
-  async function socketInitilizer(session: any, lobbyId: string) {
-    await fetch(`/api/socket`);
-    if (!session || !lobbyId) return;
-
-    socket = io({
-      path: "/api/socket",
-    });
-
-    socket.on("receiveMessage", async (data: Message) => {
-      const scrollToBottom = (node: HTMLElement) => {
-        node.scroll({ top: node.scrollHeight, behavior: "smooth" });
-      };
-
-      if (data.lobbyId !== lobbyId) return;
-
-      console.log(data);
-      setAllMessages((prev) => [...prev, data]);
-
-      if (!session || data.username !== session?.user?.name) {
-        const audio = new Audio("/sounds/message.mp3");
-        audio.loop = false;
-        audio.play();
-      }
-
-      if (elementRef.current) {
-        // Wait for messages to load
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        scrollToBottom(elementRef.current);
-      }
-    });
-
-    socket.on("buttonPressed", (data: any) => {
-      console.log(data);
-    });
-
-    if (socket) return () => socket.disconnect();
-  }
+  }, [params.lobbyId, socket, session]);
 
   function sendMessage(e: any) {
     e.preventDefault();
@@ -135,62 +144,55 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
                 No messages yet
               </div>
             ) : (
-              allMessages.map((message: Message) => {
+              allMessages.map((message: Message, index: number) => {
                 return (
-                  <>
-                    {message.type === "text" ? (
+                  <div key={`${message.lobbyId}_${index}`}>
+                    <div
+                      className={`" flex flex-row items-end w-full px-4 py-2 " ${
+                        message.username === session?.user?.name
+                          ? "justify-end"
+                          : "justify-start"
+                      }`}
+                    >
+                      {message.username !== session?.user?.name && (
+                        <Image
+                          src={message.avatar}
+                          width={46}
+                          height={46}
+                          alt="logo"
+                          className="rounded-md ml-1"
+                        />
+                      )}
                       <div
-                        className={`" flex flex-row items-end w-full px-4 py-2 " ${
+                        className={`" py-3 px-4 rounded-lg inline-block whitespace-normal break-all " ${
                           message.username === session?.user?.name
-                            ? "justify-end"
-                            : "justify-start"
+                            ? "mr-2 bg-blue-600 text-white rounded-bк-none"
+                            : "ml-2 bg-gray-300 text-black rounded-bl-none"
                         }`}
                       >
-                        {message.username !== session?.user?.name && (
-                          <Image
-                            src={message.avatar}
-                            width={46}
-                            height={46}
-                            alt="logo"
-                            className="rounded-md ml-1"
-                          />
-                        )}
-                        <div
-                          className={`" py-3 px-4 rounded-lg inline-block whitespace-normal break-all " ${
+                        <span> {message.message}</span>
+                        <br></br>
+                        <span
+                          className={`" text-sm" ${
                             message.username === session?.user?.name
-                              ? "mr-2 bg-blue-600 text-white rounded-bк-none"
-                              : "ml-2 bg-gray-300 text-black rounded-bl-none"
+                              ? "text-gray-300"
+                              : "text-gray-600"
                           }`}
                         >
-                          <span> {message.message}</span>
-                          <br></br>
-                          <span
-                            className={`" text-sm" ${
-                              message.username === session?.user?.name
-                                ? "text-gray-300"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            -{message.username}
-                          </span>
-                        </div>
-                        {message.username === session?.user?.name && (
-                          <Image
-                            src={message.avatar}
-                            width={46}
-                            height={46}
-                            alt="logo"
-                            className="rounded-md ml-1"
-                          />
-                        )}
+                          -{message.username}
+                        </span>
                       </div>
-                    ) : (
-                      // TODO: implement admin messages
-                      <div className="flex flex-row items-center justify-start w-full px-4 py-2">
-                        {message.message}
-                      </div>
-                    )}
-                  </>
+                      {message.username === session?.user?.name && (
+                        <Image
+                          src={message.avatar}
+                          width={46}
+                          height={46}
+                          alt="logo"
+                          className="rounded-md ml-1"
+                        />
+                      )}
+                    </div>
+                  </div>
                 );
               })
             )}
