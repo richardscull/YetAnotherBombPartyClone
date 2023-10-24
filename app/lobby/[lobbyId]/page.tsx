@@ -3,11 +3,15 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import io from "socket.io-client";
 import Loading from "../../components/loading";
-import { Message, Lobby as LobbyType } from "@/types";
-
+import { Message, Lobby as LobbyType, Player } from "@/types";
 import { useRef } from "react";
 import Image from "next/image";
 let socket: any = null;
+
+/**
+ *  Dear God, please forgive me for this code.
+ *  I know it's bad, but I don't know how to make multiplayer games :(
+ */
 
 function InitSocket() {
   fetch(`/api/socket`);
@@ -56,7 +60,10 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
   const [playSFX, setPlaySFX] = useState(true);
   const elementRef = useRef<HTMLDivElement>(null);
   const [allMessages, setAllMessages] = useState([] as Message[]);
-  const [audioDom, setAdudioDom] = useState<HTMLAudioElement | null>(null);
+  const [audioDom, setAudioDom] = useState<HTMLAudioElement | null>(null);
+  const [joinButtonDom, setJoinButtonDom] = useState<HTMLButtonElement | null>(
+    null
+  );
 
   // Try to get the lobby from the server
   useEffect(() => {
@@ -94,6 +101,24 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
             }
           });
 
+          socket.on("userJoinedGame", (data: any) => {
+            if (data.lobby.id !== params.lobbyId) return;
+            setLobby(data.lobby);
+
+            if (data.username === session?.user?.name && joinButtonDom) {
+              joinButtonDom.innerText = "Leave game";
+            }
+          });
+
+          socket.on("userLeftGame", (data: any) => {
+            if (data.lobby.id !== params.lobbyId) return;
+            setLobby(data.lobby);
+
+            if (data.username === session?.user?.name && joinButtonDom) {
+              joinButtonDom.innerText = "Join game";
+            }
+          });
+
           socket.on("buttonPressed", (data: any) => {
             console.log(data);
           });
@@ -101,7 +126,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
 
         setLoading(false);
       });
-  }, [params.lobbyId, session, playMusic, playSFX]);
+  }, [params.lobbyId, session, playSFX, joinButtonDom]);
 
   function sendMessage(e: any) {
     e.preventDefault(); // Prevent the page from reloading
@@ -112,9 +137,24 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
       lobbyId: params.lobbyId,
       message: message,
       avatar: session?.user?.image || "/images/guest.png",
-      username: session?.user?.name,
+      username: session?.user?.name || "Guest",
       type: "text",
     } as Message);
+  }
+
+  function sendJoinGame() {
+    if (!session || !socket) return;
+
+    socket.emit(
+      lobby?.players.find((player) => player.username === session.user?.name)
+        ? "leaveGame"
+        : "joinGame",
+      {
+        lobbyId: params.lobbyId,
+        avatar: session?.user?.image || "/images/guest.png",
+        username: session?.user?.name || "Guest",
+      }
+    );
   }
 
   // While we wait for fetch to return, show a loading message
@@ -140,31 +180,92 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
         id="bgm"
         src="/music/lobby/LazySunday.mp3"
         autoPlay
-        ref={(element) => setAdudioDom(element)}
+        ref={(element) => {
+          setAudioDom(element);
+          if (element) element.volume = 0.4;
+        }}
         onEnded={() => playRandomBGMusic(audioDom!, playMusic)}
         muted={!playMusic}
       />
       <div className="flex w-full h-[calc(100vh-105px)]">
         {/* Game field */}
-        <div className="flex flex-col flex-grow border-r border-neutral-700">
-          {/* {
-            <div>
-              {session ? (
-                <button
-                  className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-5"
-                  onClick={sendButtonPress}
-                >
-                  Send webhook!
-                </button>
-              ) : (
-                <button className="bg-neutral-800 text-gray-400 font-bold py-2 px-16 rounded mt-5 cursor-not-allowed">
-                  <span>You need to sign in first</span>
-                </button>
-              )}
+        <div className="flex flex-col flex-grow border-r border-neutral-700 items-center justify-center">
+          {/* Players list */}
+          <div>
+            <div
+              className={`" text-3xl font-bold pb-3" ${
+                lobby.players.length === 0 && "py-3"
+              }`}
+            >
+              <span>
+                Players:{" "}
+                <span className="text-3xl font-light">
+                  {lobby.players.length === 0 ? "None" : lobby.players.length}
+                </span>
+              </span>
             </div>
-          } */}
+            <div className="flow-root">
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700 overflow-y-auto max-h-[30vh] mb-3">
+                {lobby.players.map((player: Player, index: number) => {
+                  return (
+                    <li key={`${player}_${index}`} className="py-3">
+                      <div className="flex items-center space-x-4">
+                        <Image
+                          src={player.avatar || "/images/guest.png"}
+                          width={64}
+                          height={64}
+                          alt="logo"
+                          className="rounded-lg m-1 flex-shrink-0"
+                        />
+                        <span
+                          className={`" text-xl font-bold flex-1 min-w-0 " ${
+                            player.username === lobby.host && "text-yellow-600"
+                          }`}
+                        >
+                          {player.username}{" "}
+                          {player.username === lobby.host && "👑 "}
+                        </span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            {/* Buttons to join/leave and start */}
+            <div className="flex flex-col items-center justify-center">
+              <button
+                className={`" bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-5" ${
+                  !session && "cursor-not-allowed"
+                }`}
+                onClick={sendJoinGame}
+                ref={(element) => setJoinButtonDom(element)}
+              >
+                {session
+                  ? lobby?.players.find(
+                      (player) => player.username === session.user?.name
+                    )
+                    ? "Leave game"
+                    : "Join game"
+                  : "Sign in to join"}
+              </button>
+              {lobby?.players.find(
+                (player) => player.username === session?.user?.name
+              ) &&
+                (lobby.host === session?.user?.name ||
+                  (lobby.host !== session?.user?.name &&
+                    !lobby?.players.find(
+                      (player) => player.username === lobby.host
+                    ))) && (
+                  <button
+                    className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-3"
+                    onClick={() => socket.emit("startGame", lobby.id)}
+                  >
+                    Start game!
+                  </button>
+                )}
+            </div>
+          </div>
         </div>
-
         <div className="flex flex-col flex-shrink-0 w-1/4 py-4 pl-4 justify-between">
           {/* Settings */}
           <div className="flex flex-col px-4 py-2 border-b border-neutral-700 sticky">

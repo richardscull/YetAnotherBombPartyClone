@@ -14,9 +14,17 @@ type Lobby = {
   id: string;
   name: string;
   maxPlayers: number;
-  players: string[];
+  players: Player[];
+  status: "waiting" | "playing";
   host: string;
   createdAt: string;
+  words?: GameWords;
+  playersStatistics?: PlayerStatistics[];
+};
+
+type Player = {
+  username: string;
+  avatar: string;
 };
 
 type Message = {
@@ -25,4 +33,16 @@ type Message = {
   avatar: string;
   message: string;
   lobbyId: string;
+};
+
+type GameWords = {
+  wordsToUse: string[];
+  wordsUsed: string[];
+};
+
+type PlayerStatistics = {
+  username: string;
+  score: number;
+  lifes: number;
+  wordsFound: number;
 };

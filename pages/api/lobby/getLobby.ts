@@ -1,4 +1,4 @@
-import { lobbies } from "./createLobby";
+import { getLobby as getLobbyLocal } from "./createLobby";
 import type { Lobby } from "@/types";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -20,7 +20,7 @@ export default async function getLobby(
       });
     }
 
-    const lobby = lobbies.find((lobby: Lobby) => lobby.id === id);
+    const lobby = await getLobbyLocal(id);
     if (!lobby) {
       return res.status(404).json({
         error: "Lobby not found",

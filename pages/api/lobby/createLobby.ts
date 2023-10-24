@@ -1,16 +1,43 @@
-import { Lobby } from "@/types";
+import { Lobby, Player } from "@/types";
 import { NextApiRequest, NextApiResponse } from "next";
+const fsp = require("fs").promises;
 
-export const lobbies = [
-  {
-    id: "public",
-    name: "Public Lobby",
-    maxPlayers: 16,
-    players: [],
-    host: "richardscull",
-    createdAt: new Date().toISOString(),
-  },
-] as Lobby[];
+export async function getLobby(id: string) {
+  const lobbies = JSON.parse(
+    await fsp.readFile("./lobbies.json", "utf8")
+  ) as Lobby[];
+
+  const lobby = lobbies.find((lobby) => lobby.id === id);
+  return lobby || null;
+}
+
+export async function addPlayerToLobby(lobbyId: string, player: Player) {
+  const lobbies = JSON.parse(
+    await fsp.readFile("./lobbies.json", "utf8")
+  ) as Lobby[];
+
+  const lobby = lobbies.find((lobby) => lobby.id === lobbyId);
+  if (!lobby) return console.log("Lobby not found");
+
+  lobbies[lobbies.indexOf(lobby)].players = [...lobby.players, player];
+  fsp.writeFile("./lobbies.json", JSON.stringify(lobbies));
+  return lobby;
+}
+
+export async function removePlayerFromLobby(lobbyId: string, player: Player) {
+  const lobbies = JSON.parse(
+    await fsp.readFile("./lobbies.json", "utf8")
+  ) as Lobby[];
+
+  const lobby = lobbies.find((lobby) => lobby.id === lobbyId);
+  if (!lobby) return console.log("Lobby not found");
+
+  lobbies[lobbies.indexOf(lobby)].players = lobby.players.filter(
+    (cPlayer) => cPlayer.username !== player.username
+  );
+  fsp.writeFile("./lobbies.json", JSON.stringify(lobbies));
+  return lobby;
+}
 
 export default async function createLobby(
   req: NextApiRequest,
