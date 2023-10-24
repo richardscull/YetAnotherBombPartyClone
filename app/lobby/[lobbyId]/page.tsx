@@ -30,18 +30,21 @@ function unmountSocketListeners() {
   socket.removeAllListeners();
 }
 
-function playMessageSound() {
-  const audio = new Audio("/sounds/message.mp3");
+function playSoundEffect(path: string) {
+  const audio = new Audio(path);
   audio.loop = false;
   audio.play();
 }
 
-function playRandomBGMusic(audioDom: HTMLAudioElement, play: boolean = true) {
+function playRandomBGMusic(audioDom: HTMLAudioElement, play: boolean) {
   if (!play) return;
   const songs = [
     "/music/lobby/LazySunday.mp3",
     "/music/lobby/SmoothNylons.mp3",
     "/music/lobby/TownTalk.mp3",
+    "/music/lobby/CoffeeBreak.mp3",
+    "/music/lobby/PrimaBossaNova.mp3",
+    "/music/lobby/Solitaire.mp3",
   ];
   songs.splice(
     songs.indexOf("/" + audioDom.src.split("/").splice(3).join("/")),
@@ -90,7 +93,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
             setAllMessages((prev) => [...prev, data]);
 
             if (session == null || data.username !== session?.user?.name)
-              if (playSFX) playMessageSound();
+              if (playSFX) playSoundEffect("/sounds/message.mp3");
 
             if (elementRef.current) {
               await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for messages to load
@@ -105,6 +108,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
             if (data.lobby.id !== params.lobbyId) return;
             setLobby(data.lobby);
 
+            if (playSFX) playSoundEffect("/sounds/userJoin.mp3");
             if (data.username === session?.user?.name && joinButtonDom) {
               joinButtonDom.innerText = "Leave game";
             }
@@ -114,6 +118,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
             if (data.lobby.id !== params.lobbyId) return;
             setLobby(data.lobby);
 
+            if (playSFX) playSoundEffect("/sounds/userLeft.mp3");
             if (data.username === session?.user?.name && joinButtonDom) {
               joinButtonDom.innerText = "Join game";
             }
@@ -176,6 +181,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
 
   return (
     <div className="flex justify-center w-screen px-4 ">
+      {/* Background music */}
       <audio
         id="bgm"
         src="/music/lobby/LazySunday.mp3"
