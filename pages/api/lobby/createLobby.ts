@@ -7,7 +7,7 @@ export const lobbies = [
     name: "Public Lobby",
     maxPlayers: 16,
     players: [],
-    host: "host",
+    host: "richardscull",
     createdAt: new Date().toISOString(),
   },
 ] as Lobby[];
