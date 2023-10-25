@@ -58,12 +58,14 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
   const { data: session } = useSession();
   const [lobby, setLobby] = useState(null as LobbyType | null);
   const [message, setMessage] = useState("");
+  const [answer, setAnswer] = useState("");
   const [isLoading, setLoading] = useState(true);
   const [playMusic, setPlayMusic] = useState(true);
   const [playSFX, setPlaySFX] = useState(true);
   const elementRef = useRef<HTMLDivElement>(null);
   const [allMessages, setAllMessages] = useState([] as Message[]);
   const [audioDom, setAudioDom] = useState<HTMLAudioElement | null>(null);
+  const [guessDom, setGuessDom] = useState<HTMLInputElement | null>(null);
   const [joinButtonDom, setJoinButtonDom] = useState<HTMLButtonElement | null>(
     null
   );
@@ -73,7 +75,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
     // Wait for the session to load
     if (!params.lobbyId || session === undefined) return;
 
-    fetch(`/api/lobby/getLobby?id=` + params.lobbyId, {
+    fetch(`/api/lobby/getLobby?lobbyId=` + params.lobbyId, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -124,14 +126,50 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
             }
           });
 
-          socket.on("buttonPressed", (data: any) => {
-            console.log(data);
+          socket.on("gameStarted", (data: any) => {
+            if (data.lobby.id !== params.lobbyId) return;
+            setLobby(data.lobby);
+          });
+
+          socket.on("nextTurn", (data: any) => {
+            if (data.lobby.id !== params.lobbyId) return;
+            console.log(data.lobby);
+            setLobby(data.lobby);
+            setAnswer("");
+          });
+
+          socket.on("gameFinished", (data: any) => {
+            if (data.lobby.id !== params.lobbyId) return;
+            setLobby(data.lobby);
+            setAnswer("");
+            console.log("ended");
+          });
+
+          socket.on("wrongAnswer", (data: any) => {
+            if (data.lobbyId !== params.lobbyId) return;
+            setAnswer("");
+            guessDom!.placeholder = "Wrong answer, try again...";
+            guessDom!.classList.add("bg-red-200");
+            guessDom!.classList.remove("bg-gray-200");
+            if (playSFX) playSoundEffect("/sounds/wrongAnswer.mp3");
+
+            setTimeout(() => {
+              guessDom!.placeholder = "Write your answer here...";
+              guessDom!.classList.remove("bg-red-200");
+              guessDom!.classList.add("bg-gray-200");
+            }, 2000);
+          });
+
+          socket.on("changeView", (data: any) => {
+            if (data.lobbyId !== params.lobbyId) return;
+            if (data.username === session?.user?.name) return;
+            setAnswer(data.guess);
           });
         }
 
         setLoading(false);
       });
-  }, [params.lobbyId, session, playSFX, joinButtonDom]);
+  }, [params.lobbyId, session, playSFX, joinButtonDom, guessDom]);
 
   function sendMessage(e: any) {
     e.preventDefault(); // Prevent the page from reloading
@@ -145,6 +183,26 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
       username: session?.user?.name || "Guest",
       type: "text",
     } as Message);
+  }
+
+  function sendEditView(lobbyId: string, guess: string) {
+    console.log("edit");
+    socket.emit("editView", {
+      lobbyId: lobbyId,
+      guess: guess,
+      username: session?.user?.name || "Guest",
+    });
+  }
+
+  function sendAnswer(e: any) {
+    e.preventDefault(); // Prevent the page from reloading
+
+    if (!answer) return; // Don't send empty messages
+    socket.emit("sendAnswer", {
+      lobbyId: params.lobbyId,
+      guess: answer,
+      username: session?.user?.name || "Guest",
+    });
   }
 
   function sendJoinGame() {
@@ -177,7 +235,42 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
     );
   }
 
-  // TODO: add lobby page UI
+  function joinStartButton() {
+    return (
+      <div className="flex flex-col items-center justify-center">
+        <button
+          className={`" bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-5" ${
+            !session && "cursor-not-allowed"
+          }`}
+          onClick={sendJoinGame}
+          ref={(element) => setJoinButtonDom(element)}
+        >
+          {session
+            ? lobby?.players.find(
+                (player) => player.username === session.user?.name
+              )
+              ? "Leave game"
+              : "Join game"
+            : "Sign in to join"}
+        </button>
+        {lobby?.players.find(
+          (player) => player.username === session?.user?.name
+        ) &&
+          (lobby.host === session?.user?.name ||
+            (lobby.host !== session?.user?.name &&
+              !lobby?.players.find(
+                (player) => player.username === lobby.host
+              ))) && (
+            <button
+              className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-3"
+              onClick={() => socket.emit("startGame", lobby.id)}
+            >
+              Start game!
+            </button>
+          )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center w-screen px-4 ">
@@ -195,7 +288,13 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
       />
       <div className="flex w-full h-[calc(100vh-105px)]">
         {/* Game field */}
-        <div className="flex flex-col flex-grow border-r border-neutral-700 items-center justify-center">
+        <div
+          className={` flex  flex-grow border-r border-neutral-700 items-center   ${
+            lobby.status === "waiting"
+              ? "flex-col justify-center"
+              : "flex-row justify-evenly"
+          }`}
+        >
           {/* Players list */}
           <div>
             <div
@@ -223,13 +322,28 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
                           alt="logo"
                           className="rounded-lg m-1 flex-shrink-0"
                         />
+
                         <span
                           className={`" text-xl font-bold flex-1 min-w-0 " ${
-                            player.username === lobby.host && "text-yellow-600"
-                          }`}
+                            player.username === lobby.host &&
+                            lobby.status !== "playing" &&
+                            "text-yellow-600"
+                          } ${
+                            lobby.status === "playing" &&
+                            lobby.playersStatistics!.find(
+                              (playerStats) =>
+                                playerStats.username === player.username
+                            )?.lives === 0 &&
+                            "text-gray-300"
+                          }}`}
                         >
                           {player.username}{" "}
-                          {player.username === lobby.host && "👑 "}
+                          {lobby.status === "playing"
+                            ? lobby.playersStatistics!.find(
+                                (playerStats) =>
+                                  playerStats.username === player.username
+                              )?.lives === 0 && "💀 "
+                            : player.username === lobby.host && "👑 "}
                         </span>
                       </div>
                     </li>
@@ -238,39 +352,89 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
               </ul>
             </div>
             {/* Buttons to join/leave and start */}
-            <div className="flex flex-col items-center justify-center">
-              <button
-                className={`" bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-5" ${
-                  !session && "cursor-not-allowed"
-                }`}
-                onClick={sendJoinGame}
-                ref={(element) => setJoinButtonDom(element)}
-              >
-                {session
-                  ? lobby?.players.find(
-                      (player) => player.username === session.user?.name
-                    )
-                    ? "Leave game"
-                    : "Join game"
-                  : "Sign in to join"}
-              </button>
-              {lobby?.players.find(
-                (player) => player.username === session?.user?.name
-              ) &&
-                (lobby.host === session?.user?.name ||
-                  (lobby.host !== session?.user?.name &&
-                    !lobby?.players.find(
-                      (player) => player.username === lobby.host
-                    ))) && (
-                  <button
-                    className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-3"
-                    onClick={() => socket.emit("startGame", lobby.id)}
-                  >
-                    Start game!
-                  </button>
-                )}
-            </div>
+            {lobby.status === "waiting" && joinStartButton()}
           </div>
+          {/* Game field */}
+          {lobby.status === "playing" && (
+            <div className="flex flex-col items-center justify-center ">
+              <div className="flex flex-col items-center justify-center ">
+                <div className="text-3xl font-bold pb-3">
+                  <span>Current turn is for:</span>
+                </div>
+                <div className="flex flex-col items-center justify-center ">
+                  <div className="flex flex-col items-center">
+                    <Image
+                      src={
+                        lobby.players.find(
+                          (player) =>
+                            player.username === lobby.currentTurn?.username
+                        )?.avatar || "/images/guest.png"
+                      }
+                      width={64}
+                      height={64}
+                      alt="logo"
+                      className="rounded-lg m-1 flex-shrink-0"
+                    />
+                    <span className=" ">
+                      {lobby.playersStatistics!.find(
+                        (playerStats) =>
+                          playerStats!.username === lobby.currentTurn!.username
+                      )!.lives > 0
+                        ? Array.from(
+                            {
+                              length: lobby.playersStatistics!.find(
+                                (playerStats) =>
+                                  playerStats.username ===
+                                  lobby.currentTurn?.username
+                              )!.lives,
+                            },
+                            (_, index) => (
+                              <span key={index} role="img" aria-label="heart">
+                                ❤️
+                              </span>
+                            )
+                          )
+                        : "No lives left"}
+                    </span>
+                  </div>
+                  <span className="text-xl font-bold">
+                    {lobby.currentTurn?.username}
+                  </span>
+                </div>
+                <h1 className="text-6xl font-bold">
+                  {lobby.currentTurn?.prompt}
+                </h1>
+                <div className="flex flex-row items-center justify-center">
+                  <form
+                    onSubmit={sendAnswer}
+                    className="justify-center flex text-black"
+                  >
+                    <input
+                      name="answer"
+                      value={answer}
+                      onChange={(e) => {
+                        setAnswer(e.target.value);
+                        sendEditView(lobby.id, e.target.value);
+                      }}
+                      className={`" px-4  py-3  mt-5 rounded-lg bg-gray-200 " ${
+                        (!session ||
+                          session.user?.name !== lobby.currentTurn?.username) &&
+                        "cursor-not-allowed"
+                      }`}
+                      disabled={
+                        !session ||
+                        session.user?.name !== lobby.currentTurn?.username
+                      }
+                      placeholder="Write your answer here..."
+                      ref={(element) => setGuessDom(element)}
+                      maxLength={50}
+                      autoComplete="off"
+                    />
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex flex-col flex-shrink-0 w-1/4 py-4 pl-4 justify-between">
           {/* Settings */}

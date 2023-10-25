@@ -18,8 +18,10 @@ type Lobby = {
   status: "waiting" | "playing";
   host: string;
   createdAt: string;
+  currentTurn?: GameTurn;
   words?: GameWords;
   playersStatistics?: PlayerStatistics[];
+  gameStartedAt?: number;
 };
 
 type Player = {
@@ -35,14 +37,17 @@ type Message = {
   lobbyId: string;
 };
 
+type GameTurn = {
+  username: string;
+  prompt: string;
+};
+
 type GameWords = {
-  wordsToUse: string[];
   wordsUsed: string[];
 };
 
 type PlayerStatistics = {
   username: string;
-  score: number;
-  lifes: number;
+  lives: number;
   wordsFound: number;
 };

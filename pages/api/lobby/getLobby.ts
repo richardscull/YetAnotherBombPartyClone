@@ -1,5 +1,4 @@
 import { getLobby as getLobbyLocal } from "./createLobby";
-import type { Lobby } from "@/types";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function getLobby(
@@ -12,11 +11,11 @@ export default async function getLobby(
     });
 
   try {
-    const id = req.query.id as string;
+    const id = req.query.lobbyId as string;
 
     if (!id) {
       return res.status(400).json({
-        error: "Missing id",
+        error: "Missing lobbyId",
       });
     }
 
