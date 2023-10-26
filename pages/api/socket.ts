@@ -111,9 +111,16 @@ export default function SocketHandler(
 
     res.socket.server.io = io;
     io.on("connection", (socket) => {
-      socket.on("sendMessage", (message) => {
-        console.log("got message");
-        io.emit("receiveMessage", message);
+      socket.on("sendMessage", async (message: Message) => {
+        const lobby = (await getLobby(message.lobbyId)) as Lobby;
+        if (!lobby) return console.log("Lobby not found");
+        const isDeveloper = message.username === "itsrichardscull";
+        const isHost = message.username === lobby.host;
+
+        io.emit("receiveMessage", {
+          ...message,
+          userType: isHost ? "host" : isDeveloper ? "developer" : "default",
+        } as Message);
       });
 
       socket.on("joinGame", (data) => {
@@ -189,8 +196,8 @@ export default function SocketHandler(
           });
       });
 
-      socket.on("editView", (data) => {
-        io.emit("changeView", {
+      socket.on("changeAnswerField", (data) => {
+        io.emit("changedAnswerField", {
           lobbyId: data.lobbyId,
           guess: data.guess,
           username: data.username,

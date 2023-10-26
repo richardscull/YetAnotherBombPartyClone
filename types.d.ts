@@ -31,7 +31,8 @@ type Player = {
 
 type Message = {
   username: string;
-  type: "text" | "admin"; // ! "admin" type is deprecated
+  type: "text" | "server"; // ! "admin" type is deprecated
+  userType?: "default" | "host" | "developer"; // ! maybe add "system" badge
   avatar: string;
   message: string;
   lobbyId: string;
