@@ -16,6 +16,7 @@ type Lobby = {
   maxPlayers: number;
   players: Player[];
   status: "waiting" | "playing";
+  dictionary: "russian" | "english"
   host: string;
   createdAt: string;
   currentTurn?: GameTurn;

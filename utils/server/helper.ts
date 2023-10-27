@@ -10,6 +10,7 @@ export const defaultLobby = JSON.stringify([
     maxPlayers: 16,
     players: [],
     status: "waiting",
+    dictionary: "russian",
     host: "richardscull",
     createdAt: new Date().toISOString(),
   },

@@ -18,12 +18,6 @@ export default async function checkGuess(
       guess: string;
     };
 
-    const words = Object.keys(
-      JSON.parse(
-        await fs.readFile("./russian_nouns_with_definition.json", "utf8")
-      )
-    );
-
     if (!lobbyId) {
       return res.status(400).json({
         error: "Missing lobbyId",
@@ -36,6 +30,15 @@ export default async function checkGuess(
         error: "Lobby not found",
       });
     }
+
+    const words = Object.keys(
+      JSON.parse(
+        await fs.readFile(
+          `./utils/dictionaries/${lobby.dictionary}.json`,
+          "utf8"
+        )
+      )
+    );
 
     if (lobby.status !== "playing") {
       return res.status(400).json({

@@ -96,7 +96,7 @@ export async function clearLobby(lobbyId: string) {
   const lobby = lobbies.find((lobby) => lobby.id === lobbyId);
   if (!lobby) return console.log("Lobby not found");
 
-  lobbies[lobbies.indexOf(lobby)] = {
+  const cleanLobby = {
     ...lobby,
     players: [],
     words: undefined,
@@ -104,8 +104,9 @@ export async function clearLobby(lobbyId: string) {
     currentTurn: undefined,
     gameStartedAt: undefined,
     status: "waiting",
-  };
+  } as Lobby;
 
-  fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
-  return lobbies[lobbies.indexOf(lobby)];
+  lobbies[lobbies.indexOf(lobby)] = cleanLobby;
+  await fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
+  return cleanLobby;
 }

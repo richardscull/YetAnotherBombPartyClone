@@ -8,62 +8,55 @@ export async function generatePrompt(lobbyId: string) {
 
   const words = Object.keys(
     JSON.parse(
-      await fs.readFile("./russian_nouns_with_definition.json", "utf8")
+      await fs.readFile(`./utils/dictionaries/${lobby.dictionary}.json`, "utf8")
     )
   );
 
-  if (!words) return console.log("No words found");
+  if (!words) return console.error("Dictionary not found");
 
   const word = words[Math.floor(Math.random() * words.length)];
-
-  return getRandomLetters(word);
+  return getRandomLetters(word, lobby.dictionary === "english" ? 0.7 : 0.85);
 }
 
-export async function startBombTimer(lobbyId: string, currentTurn: GameTurn) {
+export async function startBombTimer(
+  lobbyId: string,
+  turnWhenBombStart: GameTurn
+) {
   return new Promise<boolean>(async (resolve) => {
-    let isBombExploded = false;
     setTimeout(async () => {
       let lobby = await getLobby(lobbyId);
       if (!lobby) {
-        resolve(isBombExploded); // Resolve the promise with the current value
+        resolve(false);
         return;
       }
 
       if (
-        lobby.currentTurn?.username != currentTurn.username ||
-        lobby.currentTurn?.prompt != currentTurn.prompt
+        lobby.currentTurn?.username != turnWhenBombStart.username ||
+        lobby.currentTurn?.prompt != turnWhenBombStart.prompt
       ) {
-        resolve(isBombExploded); // Resolve the promise with the current value
+        resolve(false);
         return;
       }
 
       lobby = {
         ...lobby,
-        playersStatistics: lobby.playersStatistics!.map((player) => {
-          if (player.username === currentTurn.username) {
-            return {
-              ...player,
-              lives: player.lives - 1,
-            };
-          } else {
-            return player;
-          }
-        }),
+        playersStatistics: lobby.playersStatistics?.map((player) =>
+          player.username === turnWhenBombStart.username
+            ? { ...player, lives: player.lives - 1 }
+            : player
+        ),
       };
 
       await updateLobby(lobbyId, lobby);
-      isBombExploded = true;
-
-      resolve(isBombExploded); // Resolve the promise with the updated value
+      resolve(true);
     }, 1000 * 10);
   });
 }
 
-export function getRandomLetters(word: string) {
+export function getRandomLetters(word: string, chanceForThreeLetters: number) {
   const letters = word.split("");
 
-  if (letters.length >= 3 && Math.random() > 0.75) {
-    // ! Maybe make chance of 3 letters higher
+  if (letters.length >= 3 && Math.random() > chanceForThreeLetters) {
     return getRandomThreeLetters(letters);
   } else if (letters.length >= 2) {
     return getRandomTwoLetters(letters);
