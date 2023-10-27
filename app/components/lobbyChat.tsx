@@ -67,6 +67,7 @@ export default function LobbyChat({ lobby, session, playSFX }: Props) {
           allMessages.map((message: Message, index: number) => {
             const isMessageFromMyself =
               message.username === session?.user?.name;
+            const isServerMessage = message.type === "server";
 
             const user = getUserColorAndBadge(message.userType || "default");
             const userBadge = user.userBadge;
@@ -87,6 +88,16 @@ export default function LobbyChat({ lobby, session, playSFX }: Props) {
               />
             );
 
+            const messageWithSignature = (
+              <>
+                <span className="whitespace-pre-wrap">{message.message}</span>
+                <br></br>
+                <span className={`text-sm ${userColor}`}>
+                  -{message.username} {userBadge}
+                </span>
+              </>
+            );
+
             return (
               <div key={`${message.lobbyId}_${index}`}>
                 <div
@@ -96,21 +107,25 @@ export default function LobbyChat({ lobby, session, playSFX }: Props) {
                       : "justify-start"
                   }`}
                 >
-                  {!isMessageFromMyself && senderImage}
-                  <div
-                    className={`py-3 px-4 rounded-lg inline-block whitespace-normal break-words ${
-                      isMessageFromMyself
-                        ? "mr-2 bg-blue-600 text-white rounded-br-none"
-                        : "ml-2 bg-gray-300 text-black rounded-bl-none"
-                    }`}
-                  >
-                    <span> {message.message}</span>
-                    <br></br>
-                    <span className={`text-sm ${userColor}`}>
-                      -{message.username} {userBadge}
-                    </span>
-                  </div>
-                  {message.username === session?.user?.name && senderImage}
+                  {!isServerMessage ? (
+                    <>
+                      {!isMessageFromMyself && senderImage}
+                      <div
+                        className={`py-3 px-4 rounded-lg inline-block break-all ${
+                          isMessageFromMyself
+                            ? "mr-2 bg-blue-600 text-white rounded-br-none"
+                            : "ml-2 bg-gray-300 text-black rounded-bl-none"
+                        }`}
+                      >
+                        {messageWithSignature}
+                      </div>
+                      {isMessageFromMyself && senderImage}
+                    </>
+                  ) : (
+                    <div className="py-3 px-4 rounded-lg inline-block break-words bg-gray-300 text-black">
+                      {messageWithSignature}
+                    </div>
+                  )}
                 </div>
               </div>
             );

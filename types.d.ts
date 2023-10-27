@@ -16,7 +16,7 @@ type Lobby = {
   maxPlayers: number;
   players: Player[];
   status: "waiting" | "playing";
-  dictionary: "russian" | "english"
+  dictionary: "russian" | "english";
   host: string;
   createdAt: string;
   currentTurn?: GameTurn;
@@ -32,8 +32,8 @@ type Player = {
 
 type Message = {
   username: string;
-  type: "text" | "server"; // ! "admin" type is deprecated
-  userType?: "default" | "host" | "developer"; // ! maybe add "system" badge
+  type: "text" | "server";
+  userType?: "default" | "host" | "developer" | "system";
   avatar: string;
   message: string;
   lobbyId: string;

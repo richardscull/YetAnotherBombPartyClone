@@ -36,16 +36,17 @@ export async function finishGame(socket: ServerIO, lobbyId: string) {
   const gameDuration = Math.floor((Date.now() - lobby.gameStartedAt!) / 1000);
 
   const winnerUsername =
-    playersAlive.length === 0 ? "No one" : `🏆 ${playersAlive[0].username}`;
+    playersAlive.length === 0 ? "💀 No one" : `🏆 ${playersAlive[0].username}`;
   const bestGuesser = lobby.playersStatistics?.sort(
     (a, b) => b.wordsFound - a.wordsFound
   )[0] || { username: "No one", wordsFound: 0 };
 
   socket.emit("receiveMessage", {
-    username: "System",
+    username: "System Message",
     lobbyId: lobbyId,
-    type: "text",
-    message: `Game finished! GG!\n⌛ Game lasted ${gameDuration} seconds.\n  ${winnerUsername} survived!\n Most words guessed by ${bestGuesser.username}, with ${bestGuesser.wordsFound} words guessed!`,
+    type: "server",
+    userType: "system",
+    message: `Game finished! 🎉 GG!\n⌛ Game lasted ${gameDuration} seconds.\n${winnerUsername} survived!\n📗 Most words guessed by ${bestGuesser.username}, with ${bestGuesser.wordsFound} words guessed!`,
   } as Message);
 
   lobby = (await clearLobby(lobbyId)) || lobby;

@@ -1,5 +1,5 @@
 export default function getUserColorAndBadge(
-  userType: "default" | "host" | "developer" 
+  userType: "default" | "host" | "developer" | "system"
 ) {
   let userColor;
   let userBadge;
@@ -14,6 +14,10 @@ export default function getUserColorAndBadge(
     case "developer":
       userColor = "text-amber-900";
       userBadge = "🛠️";
+      break;
+    case "system":
+      userColor = "text-gray-600";
+      userBadge = "🤖";
       break;
     default:
       userColor = "text-black";
