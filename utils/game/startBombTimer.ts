@@ -42,7 +42,3 @@ export default async function startBombTimer(
     }, 1000 * 10);
   });
 }
-
-
-
-
