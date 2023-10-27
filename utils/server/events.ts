@@ -7,12 +7,11 @@ import {
   JoinGameRequest,
   LeaveGameRequest,
   SendAnswerRequest,
+  StartGameRequest,
 } from "@/utils/server/types";
 
-export function onStartGame(socket: ServerIO, lobbyId: string) {
-  fetchServerApi(`lobby/startGame`, "POST", {
-    lobbyId: lobbyId,
-  }).then((data) => {
+export function onStartGame(socket: ServerIO, data: StartGameRequest) {
+  fetchServerApi(`lobby/startGame`, "POST", data).then((data) => {
     if (data.error) return console.error(`❌ ${data.error}`);
     socket.emit("gameStarted", {
       lobby: data.lobby,

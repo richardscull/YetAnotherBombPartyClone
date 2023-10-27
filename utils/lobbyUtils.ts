@@ -1,6 +1,6 @@
 import { Lobby, Player } from "@/types";
 import fs from "fs/promises";
-import { generatePrompt } from "./gameUtils";
+import generatePrompt from "./game/generatePrompt";
 
 export async function getLobby(id: string) {
   const lobbies = JSON.parse(
@@ -15,12 +15,11 @@ export async function addPlayerToLobby(lobbyId: string, player: Player) {
   const lobbies = JSON.parse(
     await fs.readFile("./lobbies.json", "utf8")
   ) as Lobby[];
-
   const lobby = lobbies.find((lobby) => lobby.id === lobbyId);
   if (!lobby) return console.log("Lobby not found");
 
   lobbies[lobbies.indexOf(lobby)].players = [...lobby.players, player];
-  fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
+  await fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
   return lobby;
 }
 
@@ -35,7 +34,7 @@ export async function removePlayerFromLobby(lobbyId: string, player: Player) {
   lobbies[lobbies.indexOf(lobby)].players = lobby.players.filter(
     (cPlayer) => cPlayer.username !== player.username
   );
-  fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
+  await fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
   return lobby;
 }
 
@@ -71,7 +70,7 @@ export async function startGameInLobby(lobbyId: string) {
     prompt: (await generatePrompt(lobbyId)) || "",
   };
 
-  fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
+  await fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
   return lobby;
 }
 
@@ -84,7 +83,7 @@ export async function updateLobby(lobbyId: string, lobbyNew: Lobby) {
   if (!lobby) return console.log("Lobby not found");
 
   lobbies[lobbies.indexOf(lobby)] = lobbyNew;
-  fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
+  await fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
   return lobbyNew;
 }
 

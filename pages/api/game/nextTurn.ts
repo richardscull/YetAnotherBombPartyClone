@@ -1,10 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import {
-  changeTurn,
-  checkHowManyAlive,
-  generatePrompt,
-} from "@/utils/gameUtils";
 import { getLobby, updateLobby } from "@/utils/lobbyUtils";
+import { checkHowManyAlive } from "@/utils/game/utils";
+import generatePrompt from "@/utils/game/generatePrompt";
+import changeTurn from "@/utils/game/changeTurn";
 
 export default async function nextTurn(
   req: NextApiRequest,
@@ -17,6 +15,7 @@ export default async function nextTurn(
 
   try {
     const { lobbyId } = req.body as { lobbyId: string };
+    const oldPrompt = req.body.prompt as string | undefined;
 
     if (!lobbyId) {
       return res.status(400).json({
@@ -51,7 +50,7 @@ export default async function nextTurn(
       });
     }
 
-    const prompt = (await generatePrompt(lobbyId)) || "error";
+    const prompt = oldPrompt || (await generatePrompt(lobbyId)) || "error";
     const newTurnUsername = (await changeTurn(lobbyId)) || "error";
 
     lobby.currentTurn = {

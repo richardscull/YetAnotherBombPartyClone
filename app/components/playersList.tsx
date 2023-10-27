@@ -27,7 +27,12 @@ function StartButton({ lobby, session, socket }: Props) {
             ))) && (
           <button
             className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-3"
-            onClick={() => socket.emit("startGame", lobby.id)}
+            onClick={() =>
+              socket.emit("startGame", {
+                lobbyId: lobby.id,
+                username: session?.user?.name || "Guest",
+              })
+            }
           >
             Start game!
           </button>

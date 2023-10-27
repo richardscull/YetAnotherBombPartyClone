@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getLobby, startGameInLobby } from "@/utils/lobbyUtils";
+import { StartGameRequest } from "@/utils/server/types";
 
 export default async function startGame(
   req: NextApiRequest,
@@ -11,7 +12,7 @@ export default async function startGame(
     });
 
   try {
-    const { lobbyId } = req.body as { lobbyId: string };
+    const { lobbyId, username } = req.body as StartGameRequest;
 
     if (!lobbyId) {
       return res.status(400).json({
@@ -23,6 +24,21 @@ export default async function startGame(
     if (!lobby) {
       return res.status(404).json({
         error: "Lobby not found",
+      });
+    }
+
+    if (!lobby.players.find((cPlayer) => cPlayer.username === username)) {
+      return res.status(400).json({
+        error: "Username does not exist",
+      });
+    }
+
+    if (
+      lobby.players.find((cPlayer) => cPlayer.username === lobby?.host) &&
+      username !== lobby?.host
+    ) {
+      return res.status(400).json({
+        error: "Only the host can start the game",
       });
     }
 

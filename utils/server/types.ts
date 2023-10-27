@@ -21,3 +21,15 @@ export interface SendAnswerRequest {
   guess: string;
   username: string;
 }
+
+export interface StartGameRequest {
+  lobbyId: string;
+  username: string;
+}
+
+export interface Bomb {
+  isExploded: boolean;
+  prompt?: string | undefined;
+  times?: number | undefined;
+}
+

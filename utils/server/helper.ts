@@ -1,7 +1,9 @@
 import { GameTurn, Lobby, Message } from "@/types";
 import { Server as ServerIO } from "socket.io";
-import { checkHowManyAlive, startBombTimer } from "@/utils/gameUtils";
 import { clearLobby, getLobby } from "@/utils/lobbyUtils";
+import { Bomb } from "./types";
+import { checkHowManyAlive } from "../game/utils";
+import startBombTimer from "../game/startBombTimer";
 
 export const defaultLobby = JSON.stringify([
   {
@@ -56,18 +58,40 @@ export async function finishGame(socket: ServerIO, lobbyId: string) {
   });
 }
 
-export async function initializeBomb(socket: ServerIO, lobby: Lobby) {
-  const isExploded = await startBombTimer(
-    lobby.id,
-    lobby.currentTurn as GameTurn
-  );
+export async function initializeBomb(
+  socket: ServerIO,
+  lobby: Lobby,
+  turnsPromptExist?: number
+) {
+  let bomb = await startBombTimer(lobby.id, lobby.currentTurn as GameTurn);
+  bomb = {
+    ...bomb,
+    times: (turnsPromptExist || 0) + 1,
+  };
 
-  if (isExploded) toNextTurn(socket, lobby.id);
+  if (bomb.isExploded) {
+    const playersAlive = await checkHowManyAlive(lobby.id);
+
+    switch (playersAlive.length) {
+      case 1:
+        bomb = undefined as any;
+        break;
+      case 2:
+        if ((turnsPromptExist || 0) + 1 >= 2) bomb = undefined as any;
+        break;
+      default:
+        if ((turnsPromptExist || 0) + 1 >= 3) bomb = undefined as any;
+        break;
+    }
+
+    toNextTurn(socket, lobby.id, bomb);
+  }
 }
 
-export function toNextTurn(socket: ServerIO, lobbyId: string) {
+export function toNextTurn(socket: ServerIO, lobbyId: string, bomb?: Bomb) {
   fetchServerApi("game/nextTurn", "POST", {
     lobbyId: lobbyId,
+    prompt: bomb?.prompt || undefined,
   }).then((data) => {
     if (data.error) return console.error(`❌ ${data.error}`);
     if (data.finished) return finishGame(socket, data.lobby.id);
@@ -76,6 +100,6 @@ export function toNextTurn(socket: ServerIO, lobbyId: string) {
       lobby: data.lobby,
     });
 
-    initializeBomb(socket, data.lobby);
+    initializeBomb(socket, data.lobby, bomb?.times);
   });
 }
