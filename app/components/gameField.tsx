@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { initSocket } from "@/utils/clientSocket";
 import { Session } from "next-auth";
+import BombAsTimer from "./BombAsTimer";
 const socket = initSocket();
 
 function calculateNumberOfHearts(lives: number) {
@@ -27,6 +28,8 @@ interface Props {
 export default function GameField({ lobby, session, setLobby }: Props) {
   const [answer, setAnswer] = useState("");
   const [guessDom, setGuessDom] = useState<HTMLInputElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(10);
 
   const isUsersTurn = session
     ? session.user?.name === lobby.currentTurn?.username
@@ -64,15 +67,22 @@ export default function GameField({ lobby, session, setLobby }: Props) {
       setAnswer(data.guess);
     }
 
-    socket.on("gameStarted", reloadLobby);
+    socket.on("gameStarted", (data: any) => {
+      reloadLobby(data);
+      setTimeLeft(10);
+      setIsPlaying(true);
+    });
     socket.on("wrongAnswer", onWrongAnswerEvent);
     socket.on("changedAnswerField", onChangedAnswerFieldEvent);
     socket.on("nextTurn", (data: any) => {
       reloadLobby(data);
+      setTimeLeft(10);
+      setIsPlaying(true);
       clearAnswerField(data);
     });
     socket.on("gameFinished", (data: any) => {
       reloadLobby(data);
+      setIsPlaying(false);
       clearAnswerField(data);
     });
 
@@ -109,6 +119,11 @@ export default function GameField({ lobby, session, setLobby }: Props) {
       {lobby.status === "playing" && (
         <div className="flex flex-col items-center justify-center">
           <div className="flex flex-col items-center justify-center">
+            <BombAsTimer
+              isPlaying={isPlaying}
+              setTimeLeft={setTimeLeft}
+              timeLeft={timeLeft}
+            />
             <div className="text-3xl font-bold pb-3">
               <span>Current turn is for:</span>
             </div>
