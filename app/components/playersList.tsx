@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { Lobby, Player } from "@/types";
-import { initSocket } from "../utils/clientSocket";
+import { initSocket } from "@/utils/clientSocket";
 import { useEffect, useState } from "react";
-import playSoundEffect from "../utils/playSoundEffect";
+import playSoundEffect from "@/utils/playSoundEffect";
 import { Session } from "next-auth";
 import { Socket } from "socket.io-client";
 const socket = initSocket();

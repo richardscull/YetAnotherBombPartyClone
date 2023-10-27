@@ -36,7 +36,7 @@ export default async function Navbar() {
                 <input
                   name="callbackUrl"
                   type="hidden"
-                  defaultValue={process.env["NEXTAUTH_URL"] || "/"}
+                  defaultValue={process.env["NEXTAUTH_URL"] || "/"} // TODO: Add current page too
                 ></input>
                 <button className="mx-6 font-mono text-white/50" type="submit">
                   {session ? "log out" : "sign in"}

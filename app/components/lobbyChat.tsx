@@ -1,10 +1,10 @@
-import { initSocket } from "@/app/utils/clientSocket";
+import { initSocket } from "@/utils/clientSocket";
 import { Lobby, Message } from "@/types";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import playSoundEffect from "../utils/playSoundEffect";
+import playSoundEffect from "@/utils/playSoundEffect";
 import { Session } from "next-auth";
-import getUserColorAndBadge from "../utils/getUserColorAndBadge";
+import getUserColorAndBadge from "@/utils/getUserColorAndBadge";
 const socket = initSocket();
 
 interface Props {
@@ -98,7 +98,7 @@ export default function LobbyChat({ lobby, session, playSFX }: Props) {
                 >
                   {!isMessageFromMyself && senderImage}
                   <div
-                    className={`py-3 px-4 rounded-lg inline-block whitespace-normal break-all ${
+                    className={`py-3 px-4 rounded-lg inline-block whitespace-normal break-words ${
                       isMessageFromMyself
                         ? "mr-2 bg-blue-600 text-white rounded-br-none"
                         : "ml-2 bg-gray-300 text-black rounded-bl-none"

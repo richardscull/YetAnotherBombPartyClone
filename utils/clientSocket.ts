@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { io } from "socket.io-client";
 const URL = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 

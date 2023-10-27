@@ -1,6 +1,6 @@
-import { addPlayerToLobby, getLobby } from "./createLobby";
-import type { Lobby } from "@/types";
 import { NextApiRequest, NextApiResponse } from "next";
+import { addPlayerToLobby, getLobby } from "@/utils/lobbyUtils";
+import { Player } from "@/types";
 
 export default async function joinGame(
   req: NextApiRequest,
@@ -12,16 +12,18 @@ export default async function joinGame(
     });
 
   try {
-    const id = req.query.lobbyId as string;
-    const { player } = req.body;
+    const { player, lobbyId } = req.body as {
+      player: Player;
+      lobbyId: string;
+    };
 
-    if (!id) {
+    if (!lobbyId) {
       return res.status(400).json({
         error: "Missing lobbyId",
       });
     }
 
-    let lobby = await getLobby(id);
+    let lobby = await getLobby(lobbyId);
     if (!lobby) {
       return res.status(404).json({
         error: "Lobby not found",
@@ -36,11 +38,11 @@ export default async function joinGame(
 
     if (lobby.players.find((cPlayer) => cPlayer.username === player.username)) {
       return res.status(400).json({
-        error: "Username already exists",
+        error: "User already exists",
       });
     }
 
-    lobby = await addPlayerToLobby(id, player) || lobby;
+    lobby = (await addPlayerToLobby(lobbyId, player)) || lobby;
 
     return res.status(200).json({
       lobby,

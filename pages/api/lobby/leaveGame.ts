@@ -1,5 +1,5 @@
 import { Player } from "@/types";
-import { removePlayerFromLobby, getLobby } from "./createLobby";
+import { getLobby, removePlayerFromLobby } from "@/utils/lobbyUtils";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function leaveGame(
@@ -12,16 +12,18 @@ export default async function leaveGame(
     });
 
   try {
-    const id = req.query.lobbyId as string;
-    const { player } = req.body;
+    const { lobbyId, player } = req.body as {
+      lobbyId: string;
+      player: Player;
+    };
 
-    if (!id) {
+    if (!lobbyId) {
       return res.status(400).json({
         error: "Missing lobbyId",
       });
     }
 
-    let lobby = await getLobby(id);
+    let lobby = await getLobby(lobbyId);
     if (!lobby) {
       return res.status(404).json({
         error: "Lobby not found",
@@ -36,7 +38,7 @@ export default async function leaveGame(
       });
     }
 
-    lobby = (await removePlayerFromLobby(id, player)) || lobby;
+    lobby = (await removePlayerFromLobby(lobbyId, player)) || lobby;
 
     return res.status(200).json({
       lobby,

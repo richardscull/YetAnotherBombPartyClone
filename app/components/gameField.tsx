@@ -1,7 +1,7 @@
 import { Lobby } from "@/types";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { initSocket } from "../utils/clientSocket";
+import { initSocket } from "@/utils/clientSocket";
 import { Session } from "next-auth";
 const socket = initSocket();
 

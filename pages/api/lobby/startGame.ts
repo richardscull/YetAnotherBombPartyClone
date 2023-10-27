@@ -1,5 +1,5 @@
-import { getLobby, startGameInLobby } from "./createLobby";
 import { NextApiRequest, NextApiResponse } from "next";
+import { getLobby, startGameInLobby } from "@/utils/lobbyUtils";
 
 export default async function startGame(
   req: NextApiRequest,
@@ -11,22 +11,22 @@ export default async function startGame(
     });
 
   try {
-    const id = req.query.lobbyId as string;
+    const { lobbyId } = req.body as { lobbyId: string };
 
-    if (!id) {
+    if (!lobbyId) {
       return res.status(400).json({
         error: "Missing lobbyId",
       });
     }
 
-    let lobby = await getLobby(id);
+    let lobby = await getLobby(lobbyId);
     if (!lobby) {
       return res.status(404).json({
         error: "Lobby not found",
       });
     }
 
-    lobby = (await startGameInLobby(id)) || lobby;
+    lobby = (await startGameInLobby(lobbyId)) || lobby;
 
     return res.status(200).json({
       lobby,
