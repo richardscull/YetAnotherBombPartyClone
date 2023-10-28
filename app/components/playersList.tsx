@@ -76,7 +76,7 @@ function JoinButton({ lobby, session, setJoinButtonDom }: JoinProps) {
       onClick={sendGameRequest}
       ref={(element) => setJoinButtonDom(element)}
     >
-      {session && isPlayerInLobby ? "Leave game" : "Join game"}
+      {session && (isPlayerInLobby ? "Leave game" : "Join game")}
       {!session && "Login to join"}
     </button>
   );
