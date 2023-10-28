@@ -177,8 +177,7 @@ export default function PlayersList({
       {/* The only way to load the colors to make them work after loaded from getDataByUsername*/}
       <p className="opacity-0  text-amber-700 " />
       <p className="opacity-0  text-yellow-600 " />
-      <p className="opacity-0  text-gray-600" />
-
+      
       <div className="flow-root">
         <ul className="divide-y divide-gray-200 dark:divide-gray-700 overflow-y-auto max-h-[30vh] mb-3">
           {lobby.players.map((player: Player, index: number) => {
