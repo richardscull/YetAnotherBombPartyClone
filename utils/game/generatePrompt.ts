@@ -14,7 +14,14 @@ export default async function generatePrompt(lobbyId: string) {
   if (!words) return console.error("Dictionary not found");
 
   const word = words[Math.floor(Math.random() * words.length)];
-  return getRandomLetters(word, lobby.dictionary === "english" ? 0.7 : 0.85);
+  const chanceForThreeLetters = lobby.dictionary === "english" ? 0.7 : 0.85;
+
+  let prompt = getRandomLetters(word, chanceForThreeLetters);
+  while (prompt.includes("-")) {
+    prompt = getRandomLetters(word, chanceForThreeLetters);
+  }
+
+  return prompt;
 }
 
 function getRandomLetters(word: string, chanceForThreeLetters: number) {
