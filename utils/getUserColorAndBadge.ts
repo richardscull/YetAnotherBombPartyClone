@@ -12,7 +12,7 @@ export default function getUserColorAndBadge(
       userBadge = "👑";
       break;
     case "developer":
-      userColor = "text-amber-900";
+      userColor = "text-amber-700";
       userBadge = "🛠️";
       break;
     case "system":

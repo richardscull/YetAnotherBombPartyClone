@@ -6,7 +6,7 @@ import { Session } from "next-auth";
 import BombAsTimer from "./BombAsTimer";
 const socket = initSocket();
 
-function calculateNumberOfHearts(lives: number) {
+export function calculateNumberOfHearts(lives: number) {
   return Array.from(
     {
       length: lives,
