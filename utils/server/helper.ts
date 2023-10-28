@@ -4,6 +4,7 @@ import { clearLobby, getLobby } from "@/utils/lobbyUtils";
 import { Bomb } from "./types";
 import { checkHowManyAlive } from "../game/utils";
 import startBombTimer from "../game/startBombTimer";
+import millisecondsToString from "../msToTime";
 
 export const defaultLobby = JSON.stringify([
   {
@@ -35,23 +36,27 @@ export async function finishGame(socket: ServerIO, lobbyId: string) {
   if (!lobby) return console.error("❌ Lobby not found");
 
   const playersAlive = await checkHowManyAlive(lobbyId);
-  const gameDuration = Math.floor((Date.now() - lobby.gameStartedAt!) / 1000);
+  const gameDuration = millisecondsToString(
+    Date.now() - (lobby.gameStartedAt || Date.now())
+  );
 
+  const winnerUsername =
+    playersAlive.length === 0 ? "💀 No one" : `🏆 ${playersAlive[0].username}`;
   const winnerAvatar = lobby.players.find(
     (player) => player.username === playersAlive[0]?.username
   )?.avatar;
-  const winnerUsername =
-    playersAlive.length === 0 ? "💀 No one" : `🏆 ${playersAlive[0].username}`;
-  const bestGuesser = lobby.playersStatistics?.sort(
-    (a, b) => b.wordsFound - a.wordsFound
-  )[0] || { username: "No one", wordsFound: 0 };
+
+  const wordsFoundTotal = lobby.playersStatistics!.reduce(
+    (acc, cur) => acc + cur.wordsFound,
+    0
+  );
 
   socket.emit("receiveMessage", {
     username: "System Message",
     lobbyId: lobbyId,
     type: "server",
     userType: "system",
-    message: `Game finished! 🎉 GG!\n⌛ Game lasted ${gameDuration} seconds.\n${winnerUsername} survived!\n📗 Most words guessed by ${bestGuesser.username}, with ${bestGuesser.wordsFound} words guessed!`,
+    message: `Game finished! 🎉 GG!\n📑 Game lasted ${gameDuration} and ${wordsFoundTotal} words were used. \n${winnerUsername} survived!`,
   } as Message);
 
   lobby = (await clearLobby(lobbyId)) || lobby;
