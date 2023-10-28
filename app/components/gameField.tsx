@@ -23,9 +23,15 @@ interface Props {
   lobby: Lobby;
   session: Session | null;
   setLobby: any;
+  setWinner: any;
 }
 
-export default function GameField({ lobby, session, setLobby }: Props) {
+export default function GameField({
+  lobby,
+  session,
+  setLobby,
+  setWinner,
+}: Props) {
   const [answer, setAnswer] = useState("");
   const [guessDom, setGuessDom] = useState<HTMLInputElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -69,6 +75,7 @@ export default function GameField({ lobby, session, setLobby }: Props) {
 
     socket.on("gameStarted", (data: any) => {
       reloadLobby(data);
+      setWinner(null);
       setTimeLeft(10);
       setIsPlaying(true);
     });
@@ -82,6 +89,7 @@ export default function GameField({ lobby, session, setLobby }: Props) {
     });
     socket.on("gameFinished", (data: any) => {
       reloadLobby(data);
+      setWinner(data.winner);
       setIsPlaying(false);
       clearAnswerField(data);
     });
@@ -93,7 +101,7 @@ export default function GameField({ lobby, session, setLobby }: Props) {
       socket.off("nextTurn", reloadLobby);
       socket.off("gameFinished", reloadLobby);
     };
-  }, [lobby, session, guessDom, setLobby]);
+  }, [lobby, session, guessDom, setLobby, setWinner]);
 
   function changeAnswerField(lobbyId: string, guess: string) {
     socket.emit("changeAnswerField", {

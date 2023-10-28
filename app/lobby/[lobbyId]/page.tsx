@@ -1,7 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { Lobby as LobbyType } from "@/types";
+import { Lobby as LobbyType, Player } from "@/types";
 
 import Loading from "@/app/components/loading";
 import LobbyChat from "@/app/components/lobbyChat";
@@ -9,11 +9,13 @@ import UserSettings from "@/app/components/userSettings";
 import BackgroundMusic from "@/app/components/backgroundMusic";
 import PlayersList from "@/app/components/playersList";
 import GameField from "@/app/components/gameField";
+import WinnerScreen from "@/app/components/winnerScreen";
 
 export default function Lobby({ params }: { params: { lobbyId: string } }) {
   const { data: session } = useSession();
   const [lobby, setLobby] = useState(null as LobbyType | null);
   const [isLoading, setLoading] = useState(true);
+  const [winner, setWinner] = useState<Player | null>(null);
   const [playMusic, setPlayMusic] = useState(true);
   const [playSFX, setPlaySFX] = useState(true);
 
@@ -48,13 +50,13 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
   }
 
   return (
-    <div className="flex justify-center w-screen px-4">
+    <div className="flex justify-center w-screen">
       <BackgroundMusic playMusic={playMusic} />
       <div className="flex w-full h-[calc(100vh-105px)]">
         <div
-          className={`flex flex-grow border-r border-neutral-700 items-center ${
+          className={`flex flex-grow border-r relative border-neutral-700 items-center ${
             lobby.status === "waiting"
-              ? "flex-col justify-center"
+              ? "flex-col justify-center "
               : "flex-row justify-evenly"
           }`}
         >
@@ -65,9 +67,20 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
             setLobby={setLobby}
           />
 
-          <GameField lobby={lobby} session={session} setLobby={setLobby} />
+          {winner && (
+            <div className="absolute top-0 left-0 w-full h-full">
+              <WinnerScreen winner={winner} setWinner={setWinner} />
+            </div>
+          )}
+
+          <GameField
+            lobby={lobby}
+            session={session}
+            setLobby={setLobby}
+            setWinner={setWinner}
+          />
         </div>
-        <div className="flex flex-col flex-shrink-0 w-1/4 py-4 pl-4 justify-between">
+        <div className="flex flex-col flex-shrink-0 w-1/4 py-4 px-4 justify-between pr-4">
           <UserSettings
             lobby={lobby}
             playSFX={playSFX}

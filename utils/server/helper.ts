@@ -54,7 +54,14 @@ export async function finishGame(socket: ServerIO, lobbyId: string) {
   lobby = (await clearLobby(lobbyId)) || lobby;
   socket.emit("gameFinished", {
     lobby: lobby,
-    winner: playersAlive[0],
+    winner: playersAlive[0]
+      ? {
+          username: playersAlive[0].username,
+          avatar: lobby.players.find(
+            (player) => player.username === winnerUsername
+          )?.avatar,
+        }
+      : undefined,
   });
 }
 
