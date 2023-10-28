@@ -28,8 +28,8 @@ export default function WinnerScreen({
         className="relative flex flex-col items-center text-center top-0 left-0 w-full h-full bg-opacity-50 bg-black justify-center 
     "
       >
-        <div className="bg-black items-center text-center flex flex-col border-black border-[32px] rounded-lg shadow-2xl bg-opacity-80">
-          <div className="relative mb-4">
+        <div className="bg-zinc-900 items-center text-center flex flex-col border-zinc-900 border-[32px] border-opacity-0 rounded-lg shadow-2xl shadow-zinc-900 bg-opacity-90">
+          <div className="relative mb-4 shadow-black shadow-lg">
             <Image
               src={winner.avatar || "/images/guest.png"}
               alt="Avatar"
@@ -41,12 +41,18 @@ export default function WinnerScreen({
               🥇
             </div>
           </div>
-          <div className="text-4xl font-bold ">{winner.username}</div>
-          <div className="text-base font-normal ">
-            won the last round!
+          <div className="text-4xl font-bold">
+            <h1 className="[text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)]">
+              {winner.username}
+            </h1>
+          </div>
+          <div className="text-base font-normal">
+            <p className="[text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)]">
+              won the last round!
+            </p>
           </div>
           <button
-            className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-5 "
+            className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-5 shadow-black shadow-lg"
             onClick={closeWinnerScreen}
           >
             Close

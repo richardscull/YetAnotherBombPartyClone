@@ -37,6 +37,9 @@ export async function finishGame(socket: ServerIO, lobbyId: string) {
   const playersAlive = await checkHowManyAlive(lobbyId);
   const gameDuration = Math.floor((Date.now() - lobby.gameStartedAt!) / 1000);
 
+  const winnerAvatar = lobby.players.find(
+    (player) => player.username === playersAlive[0]?.username
+  )?.avatar;
   const winnerUsername =
     playersAlive.length === 0 ? "💀 No one" : `🏆 ${playersAlive[0].username}`;
   const bestGuesser = lobby.playersStatistics?.sort(
@@ -57,9 +60,7 @@ export async function finishGame(socket: ServerIO, lobbyId: string) {
     winner: playersAlive[0]
       ? {
           username: playersAlive[0].username,
-          avatar: lobby.players.find(
-            (player) => player.username === winnerUsername
-          )?.avatar,
+          avatar: winnerAvatar,
         }
       : undefined,
   });
