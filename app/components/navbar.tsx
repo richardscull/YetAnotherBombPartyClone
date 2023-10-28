@@ -12,14 +12,9 @@ export default async function Navbar() {
       <nav className="bg-neutral-800 p-3 sticky z-10 h-[105px] ">
         <div className="flex items-center mx-auto place-content-between logo-text">
           <a className="flex items-center" href="/">
-            <Image
-              src="/images/bomb.svg"
-              width={64}
-              height={64}
-              alt="logo"
-              className="rounded-full m-1 filter invert"
-            />
-            <h1 className="text-3xl font-mono mx-5">Bomb Party!</h1>
+            <h1 className="text-4xl font-normal mx-5 [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)]">
+              💣 Bomb Party!
+            </h1>
           </a>
           <div className="border-4 border-neutral-900 bg-neutral-900 rounded-xl flex items-center">
             <div className="place-content-end">
