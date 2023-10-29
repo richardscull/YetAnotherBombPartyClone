@@ -28,11 +28,11 @@ function getRandomLetters(word: string, chanceForThreeLetters: number) {
   const letters = word.split("");
 
   if (letters.length >= 3 && Math.random() > chanceForThreeLetters) {
-    return getRandomThreeLetters(letters);
+    return getRandomThreeLetters(letters).toLowerCase();
   } else if (letters.length >= 2) {
-    return getRandomTwoLetters(letters);
+    return getRandomTwoLetters(letters).toLowerCase();
   } else {
-    return letters[Math.floor(Math.random() * letters.length)];
+    return letters[Math.floor(Math.random() * letters.length)].toLowerCase();
   }
 }
 
