@@ -2,6 +2,12 @@ import Image from "next/image";
 import { options } from "../api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth/next";
 import { cookies } from "next/headers";
+import { Noto_Color_Emoji } from "next/font/google";
+
+const notoColorEmoji = Noto_Color_Emoji({
+  weight: "400",
+  subsets: ["emoji"],
+});
 
 export default async function Navbar() {
   const session = await getServerSession(options);
@@ -12,8 +18,13 @@ export default async function Navbar() {
       <nav className="bg-neutral-800 p-3 sticky z-10 h-[105px] ">
         <div className="flex items-center mx-auto place-content-between logo-text">
           <a className="flex items-center" href="/">
-            <h1 className="text-4xl font-normal mx-5 [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)]">
-              💣 Bomb Party!
+            <h1
+              className={`text-4xl ml-5 [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] ${notoColorEmoji.className} `}
+            >
+              💣
+            </h1>
+            <h1 className="text-4xl mx-4 [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] ">
+              Bomb Party!
             </h1>
           </a>
           <div className="border-4 border-neutral-900 bg-neutral-900 rounded-xl flex items-center">
@@ -31,7 +42,7 @@ export default async function Navbar() {
                 <input
                   name="callbackUrl"
                   type="hidden"
-                  defaultValue={process.env["NEXTAUTH_URL"] || "/"} // TODO: Add current page too
+                  defaultValue={process.env["NEXTAUTH_URL"] || "localhost:3000"} // TODO: Add current page too
                 ></input>
                 <button className="mx-6 font-mono text-white/50" type="submit">
                   {session ? "log out" : "sign in"}
