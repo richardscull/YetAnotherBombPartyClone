@@ -13,10 +13,11 @@ export const defaultLobby = JSON.stringify([
     maxPlayers: 16,
     players: [],
     status: "waiting",
-    dictionary: "russian",
+    dictionary: process.env["PUBLIC_LOBBY_DICTIONARY"] || "english",
     host: "richardscull",
     createdAt: new Date().toISOString(),
-  },
+    isPrivate: false,
+  } as Lobby,
 ]);
 
 export async function fetchServerApi(path: string, method: string, body?: any) {
@@ -59,7 +60,7 @@ export async function finishGame(socket: ServerIO, lobbyId: string) {
     message: `Game finished! 🎉 GG!\n📑 Game lasted ${gameDuration} and ${wordsFoundTotal} words were used. \n${winnerUsername} survived!`,
   } as Message);
 
-  lobby = (await clearLobby(lobbyId)) || lobby;
+  lobby = (await clearLobby(lobbyId, Date.now())) || lobby;
   socket.emit("gameFinished", {
     lobby: lobby,
     winner: playersAlive[0]

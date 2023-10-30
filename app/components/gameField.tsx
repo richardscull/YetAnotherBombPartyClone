@@ -3,7 +3,7 @@ import NextImage from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { initSocket } from "@/utils/clientSocket";
 import { Session } from "next-auth";
-import BombAsTimer from "./BombAsTimer";
+import BombAsTimer from "@/app/components/bombAsTimer";
 import playSoundEffect from "@/utils/playSoundEffect";
 const socket = initSocket();
 
@@ -122,6 +122,9 @@ export default function GameField({
       setWinner(data.winner);
       setIsPlaying(false);
       clearAnswerField(data);
+    });
+    socket.on("userLeftLobby", (data: any) => {
+      reloadLobby(data);
     });
 
     return () => {

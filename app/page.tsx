@@ -26,6 +26,7 @@ export default async function Home() {
           <span>You need to sign in first</span>
         </button>
       )}
+      {/* TODO: Show public lobbies here */}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import { defaultLobby } from "@/utils/server/helper";
 import {
   onChangeAnswerField,
+  onDisconnect,
   onJoinGame,
   onLeaveGame,
   onSendAnswer,
@@ -48,6 +49,7 @@ export default function SocketHandler(_: any, res: NextApiResponseServerIO) {
     socket.on("joinGame", (data) => onJoinGame(serverIO, data));
     socket.on("leaveGame", (data) => onLeaveGame(serverIO, data));
     socket.on("sendAnswer", (data) => onSendAnswer(serverIO, data));
+    socket.on("disconnect", () => onDisconnect(serverIO, socket));
     socket.on("changeAnswerField", (data) =>
       onChangeAnswerField(serverIO, data)
     );

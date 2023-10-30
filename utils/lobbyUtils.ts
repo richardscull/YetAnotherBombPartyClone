@@ -11,6 +11,14 @@ export async function getLobby(id: string) {
   return lobby || null;
 }
 
+export async function createLobby() {
+  // TODO: Implement
+
+  setInterval(() => {
+    // TODO: Check if lobby had game in last 30 minutes, if not, delete it with deleteLobby()
+  }, 1000 * 60 * 30);
+}
+
 export async function addPlayerToLobby(lobbyId: string, player: Player) {
   const lobbies = JSON.parse(
     await fs.readFile("./lobbies.json", "utf8")
@@ -48,6 +56,7 @@ export async function startGameInLobby(lobbyId: string) {
 
   lobbies[lobbies.indexOf(lobby)].status = "playing";
   lobbies[lobbies.indexOf(lobby)].gameStartedAt = Date.now();
+  lobbies[lobbies.indexOf(lobby)].lastGameStartedAt = Date.now();
 
   lobbies[lobbies.indexOf(lobby)].words = {
     wordsUsed: [],
@@ -87,7 +96,7 @@ export async function updateLobby(lobbyId: string, lobbyNew: Lobby) {
   return lobbyNew;
 }
 
-export async function clearLobby(lobbyId: string) {
+export async function clearLobby(lobbyId: string, finishedAt?: number) {
   const lobbies = JSON.parse(
     await fs.readFile("./lobbies.json", "utf8")
   ) as Lobby[];
@@ -102,10 +111,24 @@ export async function clearLobby(lobbyId: string) {
     playersStatistics: undefined,
     currentTurn: undefined,
     gameStartedAt: undefined,
+    lastGameEndedAt: finishedAt || undefined,
     status: "waiting",
   } as Lobby;
 
   lobbies[lobbies.indexOf(lobby)] = cleanLobby;
   await fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
   return cleanLobby;
+}
+
+export async function deleteLobby(lobbyId: string) {
+  const lobbies = JSON.parse(
+    await fs.readFile("./lobbies.json", "utf8")
+  ) as Lobby[];
+
+  const lobby = lobbies.find((lobby) => lobby.id === lobbyId);
+  if (!lobby) return console.log("Lobby not found");
+
+  lobbies.splice(lobbies.indexOf(lobby), 1);
+
+  await fs.writeFile("./lobbies.json", JSON.stringify(lobbies));
 }

@@ -19,6 +19,9 @@ type Lobby = {
   dictionary: "russian" | "english";
   host: string;
   createdAt: string;
+  isPrivate: boolean;
+  lastGameStartedAt?: number;
+  lastGameEndedAt?: number;
   currentTurn?: GameTurn;
   words?: GameWords;
   playersStatistics?: PlayerStatistics[];
