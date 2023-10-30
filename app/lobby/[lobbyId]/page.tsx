@@ -78,6 +78,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
             session={session}
             setLobby={setLobby}
             setWinner={setWinner}
+            playSFX={playSFX}
           />
         </div>
         <div className="flex flex-col flex-shrink-0 w-1/4 py-4 px-4 justify-between pr-4">

@@ -87,13 +87,13 @@ export async function initializeBomb(
 
     switch (playersAlive.length) {
       case 1:
-        bomb = undefined as any;
+        bomb = { isExploded: true };
         break;
       case 2:
-        if ((turnsPromptExist || 0) + 1 >= 2) bomb = undefined as any;
+        if ((turnsPromptExist || 0) + 1 >= 2) bomb = { isExploded: true };
         break;
       default:
-        if ((turnsPromptExist || 0) + 1 >= 3) bomb = undefined as any;
+        if ((turnsPromptExist || 0) + 1 >= 3) bomb = { isExploded: true };
         break;
     }
 
@@ -111,6 +111,7 @@ export function toNextTurn(socket: ServerIO, lobbyId: string, bomb?: Bomb) {
 
     socket.emit("nextTurn", {
       lobby: data.lobby,
+      isExploded: bomb?.isExploded || false,
     });
 
     initializeBomb(socket, data.lobby, bomb?.times);

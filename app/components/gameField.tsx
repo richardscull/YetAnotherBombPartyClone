@@ -1,9 +1,10 @@
 import { Lobby } from "@/types";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import NextImage from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { initSocket } from "@/utils/clientSocket";
 import { Session } from "next-auth";
 import BombAsTimer from "./BombAsTimer";
+import playSoundEffect from "@/utils/playSoundEffect";
 const socket = initSocket();
 
 export function calculateNumberOfHearts(lives: number) {
@@ -24,6 +25,7 @@ interface Props {
   session: Session | null;
   setLobby: any;
   setWinner: any;
+  playSFX: boolean;
 }
 
 export default function GameField({
@@ -31,9 +33,11 @@ export default function GameField({
   session,
   setLobby,
   setWinner,
+  playSFX,
 }: Props) {
   const [answer, setAnswer] = useState("");
   const [guessDom, setGuessDom] = useState<HTMLInputElement | null>(null);
+  const gifRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState(10);
 
@@ -54,7 +58,16 @@ export default function GameField({
 
     function onWrongAnswerEvent(data: any) {
       if (data.lobbyId !== lobby.id || !guessDom) return;
-      guessDom.placeholder = "Wrong answer, try again...";
+      if (playSFX) playSoundEffect("/sounds/wrongAnswer.mp3", 0.5);
+
+      if (data.wordUsed) {
+        guessDom.classList.add("bg-orange-200");
+        guessDom.placeholder = "Word already used, try another!";
+      } else {
+        guessDom.classList.add("bg-red-200");
+        guessDom.placeholder = "Wrong answer, try again...";
+      }
+
       setAnswer("");
 
       guessDom.classList.add("bg-red-200");
@@ -64,6 +77,7 @@ export default function GameField({
         guessDom.placeholder = "Write your answer here...";
         guessDom.classList.add("bg-gray-200");
         guessDom.classList.remove("bg-red-200");
+        guessDom.classList.remove("bg-orange-200");
       }, 2000);
     }
 
@@ -71,6 +85,27 @@ export default function GameField({
       if (data.lobbyId !== lobby.id || data.username === session?.user?.name)
         return;
       setAnswer(data.guess);
+    }
+
+    function onNextTurnEvent(data: any) {
+      if (playSFX) {
+        if (data.isExploded) {
+          playSoundEffect("/sounds/explosion.mp3");
+
+          const gif = new Image();
+          gif.src = "/images/boom.gif";
+          gifRef.current?.appendChild(gif);
+          gif.addEventListener("load", function () {
+            setTimeout(() => {
+              gifRef.current?.removeChild(gif);
+            }, 2500);
+          });
+        } else playSoundEffect("/sounds/goodAnswer.mp3", 0.5);
+      }
+      reloadLobby(data);
+      setTimeLeft(10);
+      setIsPlaying(true);
+      clearAnswerField(data);
     }
 
     socket.on("gameStarted", (data: any) => {
@@ -81,12 +116,7 @@ export default function GameField({
     });
     socket.on("wrongAnswer", onWrongAnswerEvent);
     socket.on("changedAnswerField", onChangedAnswerFieldEvent);
-    socket.on("nextTurn", (data: any) => {
-      reloadLobby(data);
-      setTimeLeft(10);
-      setIsPlaying(true);
-      clearAnswerField(data);
-    });
+    socket.on("nextTurn", onNextTurnEvent);
     socket.on("gameFinished", (data: any) => {
       reloadLobby(data);
       setWinner(data.winner);
@@ -98,10 +128,10 @@ export default function GameField({
       socket.off("gameStarted", reloadLobby);
       socket.off("wrongAnswer", onWrongAnswerEvent);
       socket.off("changedAnswerField", onChangedAnswerFieldEvent);
-      socket.off("nextTurn", reloadLobby);
+      socket.off("nextTurn", onNextTurnEvent);
       socket.off("gameFinished", reloadLobby);
     };
-  }, [lobby, session, guessDom, setLobby, setWinner]);
+  }, [lobby, session, guessDom, setLobby, setWinner, playSFX]);
 
   function changeAnswerField(lobbyId: string, guess: string) {
     socket.emit("changeAnswerField", {
@@ -127,37 +157,50 @@ export default function GameField({
       {lobby.status === "playing" && (
         <div className="flex flex-col items-center justify-center">
           <div className="flex flex-col items-center justify-center">
-            <div className="text-3xl font-bold">
-              <span>Current turn is for:</span>
-            </div>
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-xl font-medium [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] mb-1">
-                {lobby.currentTurn?.username}
-              </span>
-              <div className="flex flex-col items-center">
-                <div className="relative">
-                  <Image
-                    src={
-                      lobby.players.find(
-                        (player) =>
-                          player.username === lobby.currentTurn?.username
-                      )?.avatar || "/images/guest.png"
-                    }
-                    width={85}
-                    height={85}
-                    alt="user"
-                    className="rounded-lg m-1 flex-shrink-0 shadow-xl shadow-black"
-                  />
-                  <div className="absolute right-0 left-[10px] bottom-[75px] [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] text-lg">
-                    {calculateNumberOfHearts(
-                      lobby.playersStatistics!.find(
-                        (playerStats) =>
-                          playerStats!.username === lobby.currentTurn!.username
-                      )!.lives
-                    ) || (
-                      <span className="text-3xl font-light">No lives left</span>
-                    )}
+            <div>
+              <div className="text-3xl font-bold">
+                <span>Current turn is for:</span>
+              </div>
+              <div className="flex flex-col items-center justify-center relative">
+                <span className="text-xl font-medium [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] mb-1">
+                  {lobby.currentTurn?.username}
+                </span>
+
+                <div className="flex flex-col items-center ">
+                  <div className="relative">
+                    <NextImage
+                      src={
+                        lobby.players.find(
+                          (player) =>
+                            player.username === lobby.currentTurn?.username
+                        )?.avatar || "/images/guest.png"
+                      }
+                      width={85}
+                      height={85}
+                      alt="user"
+                      className="rounded-lg m-1 flex-shrink-0 shadow-xl shadow-black"
+                    />
+
+                    <div className="absolute right-0 left-[10px] bottom-[75px] [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] text-lg">
+                      {calculateNumberOfHearts(
+                        lobby.playersStatistics!.find(
+                          (playerStats) =>
+                            playerStats!.username ===
+                            lobby.currentTurn!.username
+                        )!.lives
+                      ) || (
+                        <span className="text-3xl font-light">
+                          No lives left
+                        </span>
+                      )}
+                    </div>
                   </div>
+                </div>
+                <div
+                  ref={gifRef}
+                  className="rounded-lg absolute left-0 w-full h-full top-[10px] "
+                >
+                  {/* Place for explosion gif */}
                 </div>
               </div>
             </div>
@@ -191,6 +234,7 @@ export default function GameField({
               isPlaying={isPlaying}
               setTimeLeft={setTimeLeft}
               timeLeft={timeLeft}
+              playSFX={playSFX}
             />
           </div>
         </div>

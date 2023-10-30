@@ -152,7 +152,6 @@ export default function PlayersList({
     if (lobby.host === username) userType = "host";
     if (username === "itsrichardscull") userType = "developer";
 
-    console.log(getUserColorAndBadge(userType));
     return getUserColorAndBadge(userType);
   }
 

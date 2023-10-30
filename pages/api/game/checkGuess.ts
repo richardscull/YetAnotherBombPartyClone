@@ -69,6 +69,7 @@ export default async function checkGuess(
     if (lobby.words?.wordsUsed.includes(guess.toLowerCase())) {
       return res.status(400).json({
         error: "Word already used",
+        isWordAlreadyUsed: true,
       });
     }
 

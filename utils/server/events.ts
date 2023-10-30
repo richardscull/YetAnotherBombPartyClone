@@ -62,18 +62,19 @@ export function onChangeAnswerField(
 }
 
 export async function onSendAnswer(socket: ServerIO, data: SendAnswerRequest) {
-  const isGuessRight = await fetchServerApi(`game/checkGuess`, "POST", {
+  const guess = await fetchServerApi(`game/checkGuess`, "POST", {
     lobbyId: data.lobbyId,
     player: { username: data.username },
     guess: data.guess,
   }).then((data) => {
-    if (data.error) return false;
-    return true;
+    if (data.error) return { ...data, isGuessRight: false };
+    return { ...data, isGuessRight: true };
   });
 
-  if (!isGuessRight)
+  if (!guess.isGuessRight)
     return socket.emit("wrongAnswer", {
       lobbyId: data.lobbyId,
+      wordUsed: guess.isWordAlreadyUsed || false,
     });
 
   toNextTurn(socket, data.lobbyId);
