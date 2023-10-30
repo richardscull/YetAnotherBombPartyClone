@@ -127,44 +127,43 @@ export default function GameField({
       {lobby.status === "playing" && (
         <div className="flex flex-col items-center justify-center">
           <div className="flex flex-col items-center justify-center">
-            <BombAsTimer
-              isPlaying={isPlaying}
-              setTimeLeft={setTimeLeft}
-              timeLeft={timeLeft}
-            />
-            <div className="text-3xl font-bold pb-3">
+            <div className="text-3xl font-bold">
               <span>Current turn is for:</span>
             </div>
             <div className="flex flex-col items-center justify-center">
-              <div className="flex flex-col items-center">
-                <Image
-                  src={
-                    lobby.players.find(
-                      (player) =>
-                        player.username === lobby.currentTurn?.username
-                    )?.avatar || "/images/guest.png"
-                  }
-                  width={64}
-                  height={64}
-                  alt="user"
-                  className="rounded-lg m-1 flex-shrink-0"
-                />
-                <span>
-                  {calculateNumberOfHearts(
-                    lobby.playersStatistics!.find(
-                      (playerStats) =>
-                        playerStats!.username === lobby.currentTurn!.username
-                    )!.lives
-                  ) || (
-                    <span className="text-3xl font-light">No lives left</span>
-                  )}
-                </span>
-              </div>
-              <span className="text-xl font-bold">
+              <span className="text-xl font-medium [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] mb-1">
                 {lobby.currentTurn?.username}
               </span>
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <Image
+                    src={
+                      lobby.players.find(
+                        (player) =>
+                          player.username === lobby.currentTurn?.username
+                      )?.avatar || "/images/guest.png"
+                    }
+                    width={85}
+                    height={85}
+                    alt="user"
+                    className="rounded-lg m-1 flex-shrink-0 shadow-xl shadow-black"
+                  />
+                  <div className="absolute right-0 left-[10px] bottom-[75px] [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] text-lg">
+                    {calculateNumberOfHearts(
+                      lobby.playersStatistics!.find(
+                        (playerStats) =>
+                          playerStats!.username === lobby.currentTurn!.username
+                      )!.lives
+                    ) || (
+                      <span className="text-3xl font-light">No lives left</span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-            <h1 className="text-6xl font-bold">{lobby.currentTurn?.prompt}</h1>
+            <h1 className="text-6xl font-bold mt-3">
+              {lobby.currentTurn?.prompt}
+            </h1>
             <div className="flex flex-row items-center justify-center">
               <form
                 onSubmit={sendAnswer}
@@ -177,7 +176,7 @@ export default function GameField({
                     setAnswer(e.target.value);
                     changeAnswerField(lobby.id, e.target.value);
                   }}
-                  className={`px-4 py-3 mt-5 rounded-lg bg-gray-200 ${
+                  className={`w-[300px] px-4 py-3 mt-5 mb-2 rounded-lg bg-gray-200 ${
                     !isUsersTurn && "cursor-not-allowed"
                   }`}
                   disabled={!isUsersTurn}
@@ -188,6 +187,11 @@ export default function GameField({
                 />
               </form>
             </div>
+            <BombAsTimer
+              isPlaying={isPlaying}
+              setTimeLeft={setTimeLeft}
+              timeLeft={timeLeft}
+            />
           </div>
         </div>
       )}

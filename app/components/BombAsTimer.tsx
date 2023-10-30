@@ -23,8 +23,8 @@ export default function BombAsTimer({
 
   return (
     (isPlaying || timeLeft > 0) && (
-      <div className="flex flex-row items-center justify-center w-full px-4 py-2">
-        {timeLeft}
+      <div className="flex flex-row items-center justify-center w-full px-4 font-thin ">
+        ⌛ Time left: <span className="font-semibold">&nbsp;{timeLeft}</span>
       </div>
     )
   );
