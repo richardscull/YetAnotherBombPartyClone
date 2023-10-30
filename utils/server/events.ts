@@ -75,6 +75,7 @@ export async function onSendAnswer(socket: ServerIO, data: SendAnswerRequest) {
     return socket.emit("wrongAnswer", {
       lobbyId: data.lobbyId,
       wordUsed: guess.isWordAlreadyUsed || false,
+      isTooShort: guess.isTooShort || false,
     });
 
   toNextTurn(socket, data.lobbyId);

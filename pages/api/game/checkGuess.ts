@@ -31,6 +31,12 @@ export default async function checkGuess(
       });
     }
 
+    if (lobby.status !== "playing") {
+      return res.status(400).json({
+        error: "Game not started",
+      });
+    }
+
     const words = Object.keys(
       JSON.parse(
         await fs.readFile(
@@ -40,15 +46,16 @@ export default async function checkGuess(
       )
     );
 
-    if (lobby.status !== "playing") {
-      return res.status(400).json({
-        error: "Game not started",
-      });
-    }
-
     if (lobby.currentTurn?.username !== player.username) {
       return res.status(400).json({
         error: "Not your turn",
+      });
+    }
+
+    if (guess.length <= 2) {
+      return res.status(400).json({
+        error: "Guess is too short",
+        isTooShort: true,
       });
     }
 

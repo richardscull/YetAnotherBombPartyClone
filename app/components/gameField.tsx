@@ -60,21 +60,21 @@ export default function GameField({
       if (data.lobbyId !== lobby.id || !guessDom) return;
       if (playSFX) playSoundEffect("/sounds/wrongAnswer.mp3", 0.5);
 
-      if (data.wordUsed) {
+      if (data.wordUsed || data.isTooShort) {
         guessDom.classList.add("bg-orange-200");
-        guessDom.placeholder = "Word already used, try another!";
+        guessDom.placeholder = data.wordUsed
+          ? "Word already used, try another!"
+          : "Word too short, try another!";
       } else {
         guessDom.classList.add("bg-red-200");
-        guessDom.placeholder = "Wrong answer, try again...";
+        guessDom.placeholder = "Wrong answer, try again!";
       }
 
       setAnswer("");
-
-      guessDom.classList.add("bg-red-200");
       guessDom.classList.remove("bg-gray-200");
 
       setTimeout(() => {
-        guessDom.placeholder = "Write your answer here...";
+        guessDom.placeholder = "Write your answer here.";
         guessDom.classList.add("bg-gray-200");
         guessDom.classList.remove("bg-red-200");
         guessDom.classList.remove("bg-orange-200");
