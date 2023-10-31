@@ -47,10 +47,10 @@ export async function finishGame(socket: ServerIO, lobbyId: string) {
     (player) => player.username === playersAlive[0]?.username
   )?.avatar;
 
-  const wordsFoundTotal = lobby.playersStatistics!.reduce(
+  const wordsFoundTotal = lobby.playersStatistics?.reduce(
     (acc, cur) => acc + cur.wordsFound,
     0
-  );
+  ) || 0;
 
   socket.emit("receiveMessage", {
     username: "System Message",
