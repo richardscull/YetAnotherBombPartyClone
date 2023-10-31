@@ -3,7 +3,7 @@ import NextImage from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { initSocket } from "@/utils/clientSocket";
 import { Session } from "next-auth";
-import BombAsTimer from "@/app/components/bombAsTimer";
+import TimerForBomb from "@/app/components/timerForBomb";
 import playSoundEffect from "@/utils/playSoundEffect";
 const socket = initSocket();
 
@@ -233,7 +233,7 @@ export default function GameField({
                 />
               </form>
             </div>
-            <BombAsTimer
+            <TimerForBomb
               isPlaying={isPlaying}
               setTimeLeft={setTimeLeft}
               timeLeft={timeLeft}

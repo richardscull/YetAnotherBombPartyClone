@@ -1,5 +1,5 @@
 import playSoundEffect from "@/utils/playSoundEffect";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 
 interface Props {
   isPlaying: boolean;
@@ -8,7 +8,7 @@ interface Props {
   playSFX: boolean;
 }
 
-export default function BombAsTimer({
+export default function TimerForBomb({
   isPlaying,
   timeLeft,
   setTimeLeft,
