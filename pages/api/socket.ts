@@ -1,7 +1,7 @@
 import { Message, NextApiResponseServerIO } from "@/types";
 import { Server as ServerIO } from "socket.io";
 import { Server as NetServer } from "http";
-import fs from "fs/promises";
+import fs from "fs";
 import { defaultLobby } from "@/utils/server/helper";
 import {
   onChangeAnswerField,
@@ -27,7 +27,7 @@ function InitializeServerSocket(res: NextApiResponseServerIO) {
 
   // Since this is a new server,
   // we need to create/update a lobbies.json file
-  fs.writeFile("./lobbies.json", defaultLobby);
+  fs.writeFileSync("./lobbies.json", defaultLobby);
 
   res.socket.server.io = io;
   return io;

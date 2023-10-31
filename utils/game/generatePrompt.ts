@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import fs from "fs";
 import { getLobby } from "../lobbyUtils";
 
 export default async function generatePrompt(lobbyId: string) {
@@ -7,7 +7,7 @@ export default async function generatePrompt(lobbyId: string) {
 
   const words = Object.keys(
     JSON.parse(
-      await fs.readFile(`./utils/dictionaries/${lobby.dictionary}.json`, "utf8")
+      fs.readFileSync(`./utils/dictionaries/${lobby.dictionary}.json`, "utf8")
     )
   );
 

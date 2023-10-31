@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs/promises";
+import fs from "fs"
 import { getLobby, updateLobby } from "@/utils/lobbyUtils";
 
 export default async function checkGuess(
@@ -39,7 +39,7 @@ export default async function checkGuess(
 
     const words = Object.keys(
       JSON.parse(
-        await fs.readFile(
+        fs.readFileSync(
           `./utils/dictionaries/${lobby.dictionary}.json`,
           "utf8"
         )
