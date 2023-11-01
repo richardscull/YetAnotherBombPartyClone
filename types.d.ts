@@ -10,13 +10,15 @@ type NextApiResponseServerIO = NextApiResponse & {
   };
 };
 
+type dictionaryType = "russian" | "english" | "russian-big";
+
 type Lobby = {
   id: string;
   name: string;
   maxPlayers: number;
   players: Player[];
   status: "waiting" | "playing";
-  dictionary: "russian" | "english";
+  dictionary: dictionaryType
   host: string;
   createdAt: string;
   isPrivate: boolean;

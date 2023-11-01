@@ -1,15 +1,11 @@
-import fs from "fs";
+import getWordsFromDictionary from "../getWordsFromDictionary";
 import { getLobby } from "../lobbyUtils";
 
 export default async function generatePrompt(lobbyId: string) {
   const lobby = await getLobby(lobbyId);
   if (!lobby) return console.log("Lobby not found");
 
-  const words = Object.keys(
-    JSON.parse(
-      fs.readFileSync(`./utils/dictionaries/${lobby.dictionary}.json`, "utf8")
-    )
-  );
+  const words = getWordsFromDictionary(lobby.dictionary);
 
   if (!words) return console.error("Dictionary not found");
 

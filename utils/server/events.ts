@@ -1,6 +1,6 @@
 import { Server as ServerIO, Socket as SocketIO } from "socket.io";
 import { fetchServerApi, initializeBomb, toNextTurn } from "./helper";
-import { Lobby, Message } from "@/types";
+import { Lobby, Message, dictionaryType } from "@/types";
 import { getLobby, updateLobby } from "@/utils/lobbyUtils";
 import {
   ChangeAnswerFieldRequest,
@@ -48,6 +48,29 @@ export async function onSendMessage(socket: ServerIO, message: Message) {
 
   const isDeveloper = message.username === "itsrichardscull";
   const isHost = message.username === lobby.host;
+
+  const changeDictionaryTo = message.message.match(/^\/dictionary "([^"]+)"$/);
+  if (isHost && changeDictionaryTo && lobby.status === "waiting") {
+    if (
+      !["russian", "english", "russian-big"].includes(
+        changeDictionaryTo[1] as dictionaryType
+      )
+    )
+      return;
+
+    (await updateLobby(lobby.id, {
+      ...lobby,
+      dictionary: changeDictionaryTo[1] as dictionaryType,
+    })) || lobby;
+
+    return socket.emit("receiveMessage", {
+      type: "server",
+      message: `Dictionary changed to ${changeDictionaryTo[1]}`,
+      lobbyId: lobby.id,
+      username: "System Message",
+      userType: "system",
+    } as Message);
+  }
 
   socket.emit("receiveMessage", {
     ...message,

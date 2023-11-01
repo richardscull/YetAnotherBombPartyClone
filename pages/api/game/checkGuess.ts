@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs"
 import { getLobby, updateLobby } from "@/utils/lobbyUtils";
+import getWordsFromDictionary from "@/utils/getWordsFromDictionary";
 
 export default async function checkGuess(
   req: NextApiRequest,
@@ -37,14 +37,7 @@ export default async function checkGuess(
       });
     }
 
-    const words = Object.keys(
-      JSON.parse(
-        fs.readFileSync(
-          `./utils/dictionaries/${lobby.dictionary}.json`,
-          "utf8"
-        )
-      )
-    );
+    const words = getWordsFromDictionary(lobby.dictionary);
 
     if (lobby.currentTurn?.username !== player.username) {
       return res.status(400).json({
