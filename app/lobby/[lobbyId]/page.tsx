@@ -21,7 +21,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
 
   useEffect(() => {
     // Try to get the lobby from the server
-    fetch(`/api/lobby/getLobby?id=` + params.lobbyId, {
+    fetch(`${process.env["NEXT_PUBLIC_URL"]}/api/lobby/getLobby?id=` + params.lobbyId, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
