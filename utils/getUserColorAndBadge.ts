@@ -1,3 +1,5 @@
+import { Lobby } from "@/types";
+
 export default function getUserColorAndBadge(
   userType: "default" | "host" | "developer" | "system"
 ) {
@@ -25,4 +27,12 @@ export default function getUserColorAndBadge(
   }
 
   return { userColor, userBadge };
+}
+
+export function getUserType(username: string, lobby: Lobby) {
+  if (username === "itsrichardscull") return "developer";
+  if (username === "System Message") return "system";
+  if (username === lobby.host) return "host";
+
+  return "default";
 }

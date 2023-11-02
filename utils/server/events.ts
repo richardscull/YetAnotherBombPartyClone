@@ -10,6 +10,8 @@ import {
   StartGameRequest,
 } from "@/utils/server/types";
 import { decode } from "next-auth/jwt";
+import handleSlashCommands, { isSlashCommand } from "../handleSlashCommands";
+import { getUserType } from "../getUserColorAndBadge";
 
 export function onStartGame(socket: ServerIO, data: StartGameRequest) {
   fetchServerApi(`lobby/startGame`, "POST", data).then((data) => {
@@ -42,39 +44,18 @@ export function onLeaveGame(socket: ServerIO, data: LeaveGameRequest) {
   });
 }
 
-export async function onSendMessage(socket: ServerIO, message: Message) {
+export async function onSendMessage(socket: ServerIO, socketClient: SocketIO, message: Message) {
   const lobby = (await getLobby(message.lobbyId)) as Lobby;
   if (!lobby) return console.error("Lobby not found");
 
-  const isDeveloper = message.username === "itsrichardscull";
   const isHost = message.username === lobby.host;
 
-  const changeDictionaryTo = message.message.match(/^\/dictionary "([^"]+)"$/);
-  if (isHost && changeDictionaryTo && lobby.status === "waiting") {
-    if (
-      !["russian", "english", "russian-big"].includes(
-        changeDictionaryTo[1] as dictionaryType
-      )
-    )
-      return;
-
-    (await updateLobby(lobby.id, {
-      ...lobby,
-      dictionary: changeDictionaryTo[1] as dictionaryType,
-    })) || lobby;
-
-    return socket.emit("receiveMessage", {
-      type: "server",
-      message: `Dictionary changed to ${changeDictionaryTo[1]}`,
-      lobbyId: lobby.id,
-      username: "System Message",
-      userType: "system",
-    } as Message);
-  }
+  if (isHost && isSlashCommand(message.message) && lobby.status === "waiting")
+    return await handleSlashCommands(socket, socketClient, lobby, message);
 
   socket.emit("receiveMessage", {
     ...message,
-    userType: isHost ? "host" : isDeveloper ? "developer" : "default",
+    userType: getUserType(message.username, lobby),
   } as Message);
 }
 

@@ -41,9 +41,8 @@ export default function SocketHandler(_: any, res: NextApiResponseServerIO) {
 
   const serverIO = InitializeServerSocket(res);
   serverIO.on("connection", (socket) => {
-    socket.on(
-      "sendMessage",
-      async (m: Message) => await onSendMessage(serverIO, m)
+    socket.on("sendMessage", (m: Message) =>
+      onSendMessage(serverIO, socket, m)
     );
     socket.on("startGame", (data) => onStartGame(serverIO, data));
     socket.on("joinGame", (data) => onJoinGame(serverIO, data));
