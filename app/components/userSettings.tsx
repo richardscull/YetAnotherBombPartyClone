@@ -1,4 +1,5 @@
 import { Lobby } from "@/types";
+import capitalizeFirstLetter from "@/utils/capitalizeFirstLetter";
 
 interface Props {
   lobby: Lobby;
@@ -25,6 +26,14 @@ export default function UserSettings({
           Players:{" "}
           <span className="text-xl font-light">
             {lobby.players.length} / {lobby.maxPlayers}
+          </span>
+        </span>
+      </div>
+      <div className="flex flex-row items-center justify-between w-full">
+        <span className="text-xl font-bold">
+          Dictionary:{" "}
+          <span className="text-xl font-light">
+            {capitalizeFirstLetter(lobby.dictionary)}
           </span>
         </span>
       </div>

@@ -89,7 +89,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
             setPlayMusic={setPlayMusic}
             playMusic={playMusic}
           />
-          <LobbyChat lobby={lobby} session={session} playSFX={playSFX} />
+          <LobbyChat lobby={lobby} session={session} setLobby={setLobby} playSFX={playSFX} />
         </div>
       </div>
     </div>

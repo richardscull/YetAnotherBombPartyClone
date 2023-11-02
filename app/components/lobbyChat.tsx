@@ -10,21 +10,45 @@ const socket = initSocket();
 interface Props {
   lobby: Lobby;
   session: Session | null;
+  setLobby: any;
   playSFX: boolean;
 }
 
-export default function LobbyChat({ lobby, session, playSFX }: Props) {
+export default function LobbyChat({
+  lobby,
+  session,
+  setLobby,
+  playSFX,
+}: Props) {
   const messagesListRef = useRef<HTMLDivElement>(null);
   const [allMessages, setAllMessages] = useState([] as Message[]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    function reloadLobby(lobbyId: string) {
+      fetch(
+        `${process.env["NEXT_PUBLIC_URL"]}/api/lobby/getLobby?id=` + lobbyId,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((data: any) => {
+          setLobby(data.lobby);
+        });
+    }
+
     async function onReceiveMessageEvent(data: Message) {
       if (data.lobbyId !== lobby.id) return;
       setAllMessages((prev) => [...prev, data]);
 
       if (session == null || data.username !== session?.user?.name)
         if (playSFX) playSoundEffect("/sounds/message.mp3");
+
+      if (data.type === "server") reloadLobby(lobby.id);
 
       if (messagesListRef.current) {
         await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for messages to load
