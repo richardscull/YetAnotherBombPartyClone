@@ -44,14 +44,38 @@ export function onLeaveGame(socket: ServerIO, data: LeaveGameRequest) {
   });
 }
 
-export async function onSendMessage(socket: ServerIO, socketClient: SocketIO, message: Message) {
+export async function onSendMessage(
+  socket: ServerIO,
+  socketClient: SocketIO,
+  message: Message
+) {
   const lobby = (await getLobby(message.lobbyId)) as Lobby;
   if (!lobby) return console.error("Lobby not found");
 
   const isHost = message.username === lobby.host;
 
-  if (isHost && isSlashCommand(message.message) && lobby.status === "waiting")
-    return await handleSlashCommands(socket, socketClient, lobby, message);
+  if (isSlashCommand(message.message)) {
+    if (!isHost)
+      return socketClient.emit("receiveMessage", {
+        type: "server",
+        message: `You can't use slash commands if you're not the host`,
+        lobbyId: lobby.id,
+        username: "System Message",
+        userType: "system",
+      } as Message);
+
+    if (lobby.status === "playing")
+      socketClient.emit("receiveMessage", {
+        type: "server",
+        message: `You can't use slash commands while playing`,
+        lobbyId: lobby.id,
+        username: "System Message",
+        userType: "system",
+      } as Message);
+
+    if (isHost && lobby.status === "waiting")
+      return await handleSlashCommands(socket, socketClient, lobby, message);
+  }
 
   socket.emit("receiveMessage", {
     ...message,
