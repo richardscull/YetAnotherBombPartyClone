@@ -1,4 +1,7 @@
-# Yet Another Bomb Party Clone 💣
+<h1 align="center">Yet Another Bomb Party Clone 💣</h1>
+<h1 align="center">
+<img src="./preview/bombparty.gif" alt="Bomb Party Preview">
+</h1>
 
 ## Description
 
