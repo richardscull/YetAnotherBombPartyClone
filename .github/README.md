@@ -5,7 +5,7 @@
 
 ## Description
 
-This repository contains a clone of the popular game "Bomb Party," developed using Next.js and TypeScript. Bomb Party is a fast-paced word game where players take turns to type words as quickly as possible to avoid the "bomb" exploding.
+This repository contains a clone of the popular game "BombParty," developed using Next.js and TypeScript. Bomb Party is a fast-paced word game where players take turns to type words as quickly as possible to avoid the "bomb" exploding.
 
 ## Features
 
