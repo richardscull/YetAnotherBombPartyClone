@@ -1,6 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import Link from "next/link";
+import { use, useState, useEffect } from "react";
 import { Lobby as LobbyType, Player } from "@/types";
 
 import Loading from "@/app/components/loading";
@@ -11,7 +12,8 @@ import PlayersList from "@/app/components/playersList";
 import GameField from "@/app/components/gameField";
 import WinnerScreen from "@/app/components/winnerScreen";
 
-export default function Lobby({ params }: { params: { lobbyId: string } }) {
+export default function Lobby({ params }: { params: Promise<{ lobbyId: string }> }) {
+  const { lobbyId } = use(params);
   const { data: session } = useSession();
   const [lobby, setLobby] = useState(null as LobbyType | null);
   const [isLoading, setLoading] = useState(true);
@@ -21,7 +23,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
 
   useEffect(() => {
     // Try to get the lobby from the server
-    fetch(`${process.env["NEXT_PUBLIC_URL"]}/api/lobby/getLobby?id=` + params.lobbyId, {
+    fetch(`${process.env["NEXT_PUBLIC_URL"]}/api/lobby/getLobby?id=` + lobbyId, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -32,7 +34,7 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
         setLobby(data.lobby);
         setLoading(false);
       });
-  }, [params.lobbyId]);
+  }, [lobbyId]);
 
   // While we wait for fetch to return, show a loading message
   if (isLoading) return <Loading />;
@@ -42,9 +44,12 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
     return (
       <div className="text-3xl px-6 mx-auto text-center mb-12 my-5">
         <h1 className="font-mono">Lobby not found</h1>
-        <button className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-5">
-          <a href="/">Return to menu</a>
-        </button>
+          <Link
+            href="/"
+            className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-16 rounded mt-5 inline-block"
+          >
+            Return to menu
+          </Link>
       </div>
     );
   }
@@ -69,7 +74,11 @@ export default function Lobby({ params }: { params: { lobbyId: string } }) {
 
           {winner && (
             <div className="absolute top-0 left-0 w-full h-full">
-              <WinnerScreen winner={winner} setWinner={setWinner} />
+              <WinnerScreen
+                key={winner.username}
+                winner={winner}
+                setWinner={setWinner}
+              />
             </div>
           )}
 
