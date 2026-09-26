@@ -1,6 +1,6 @@
 import { Player } from "@/types";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function WinnerScreen({
   winner,
@@ -10,12 +10,6 @@ export default function WinnerScreen({
   setWinner: any;
 }) {
   const [showMenu, setShowMenu] = useState(true);
-
-  useEffect(() => {
-    if (winner) {
-      setShowMenu(true);
-    }
-  }, [winner]);
 
   function closeWinnerScreen() {
     setShowMenu(false);

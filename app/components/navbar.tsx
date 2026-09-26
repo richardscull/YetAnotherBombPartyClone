@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { options } from "../api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth/next";
 import { cookies } from "next/headers";
@@ -11,13 +12,13 @@ const notoColorEmoji = Noto_Color_Emoji({
 
 export default async function Navbar() {
   const session = await getServerSession(options);
-  const csrf = cookies().get("next-auth.csrf-token")?.value.split("|")[0];
+  const csrf = (await cookies()).get("next-auth.csrf-token")?.value.split("|")[0];
 
   return (
     <>
       <nav className="bg-neutral-800 p-3 sticky z-10 h-[105px] ">
         <div className="flex items-center mx-auto place-content-between logo-text">
-          <a className="flex items-center" href="/">
+          <Link className="flex items-center" href="/">
             <h1
               className={`text-4xl ml-5 [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] ${notoColorEmoji.className} `}
             >
@@ -26,7 +27,7 @@ export default async function Navbar() {
             <h1 className="text-4xl mx-4 [text-shadow:_0px_5px_10px_rgb(10_0_0_/_100%)] ">
               Bomb Party!
             </h1>
-          </a>
+          </Link>
           <div className="border-4 border-neutral-900 bg-neutral-900 rounded-xl flex items-center">
             <div className="place-content-end">
               <h1 className="mx-6 font-mono">

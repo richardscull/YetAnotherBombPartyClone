@@ -1,5 +1,6 @@
 import { options } from "./api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth/next";
+import Link from "next/link";
 
 export default async function Home() {
   const session = await getServerSession(options);
@@ -18,9 +19,12 @@ export default async function Home() {
       </p>
 
       {session ? (
-        <button className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-32 rounded mt-5">
-          <a href="/lobby/public">Join a public lobby</a>
-        </button>
+        <Link
+          href="/lobby/public"
+          className="bg-neutral-700 hover:bg-neutral-800 text-white font-bold py-2 px-32 rounded mt-5 inline-block"
+        >
+          Join a public lobby
+        </Link>
       ) : (
         <button className="bg-neutral-800 text-gray-400 font-bold py-2 px-32 rounded mt-5 cursor-not-allowed">
           <span>You need to sign in first</span>
